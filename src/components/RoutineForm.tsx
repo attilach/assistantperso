@@ -10,7 +10,7 @@ import {
   type Routine,
   type RoutineCategory,
 } from "@/lib/routines";
-import { X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 
 type Props = {
   initial?: Partial<Routine>;
@@ -21,9 +21,10 @@ type Props = {
     time_of_day: string | null;
   }) => Promise<void> | void;
   onCancel: () => void;
+  onDelete?: () => Promise<void> | void;
 };
 
-export default function RoutineForm({ initial, onSubmit, onCancel }: Props) {
+export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: Props) {
   const [title, setTitle] = useState(initial?.title ?? "");
   const [category, setCategory] = useState<RoutineCategory>(
     (initial?.category as RoutineCategory) ?? "sport"
@@ -176,6 +177,30 @@ export default function RoutineForm({ initial, onSubmit, onCancel }: Props) {
             {initial?.id ? "Enregistrer" : "Créer"}
           </Button>
         </div>
+
+        {/* Danger zone — uniquement en mode édition */}
+        {initial?.id && onDelete && (
+          <>
+            <div className="my-5 h-px bg-border" />
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm(`Supprimer "${initial.title}" et tout son historique ?`)) return;
+                setBusy(true);
+                try {
+                  await onDelete();
+                } finally {
+                  setBusy(false);
+                }
+              }}
+              disabled={busy}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer cette routine
+            </button>
+          </>
+        )}
       </form>
     </div>
   );

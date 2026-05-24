@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import RoutineForm from "@/components/RoutineForm";
-import { Check, Plus, Flame, Pencil, Trash2, Clock, Loader2 } from "lucide-react";
+import { Check, ChevronRight, Plus, Flame, Clock, Loader2 } from "lucide-react";
 
 export default function RoutineList() {
   const [routines, setRoutines] = useState<Routine[]>([]);
@@ -125,11 +125,14 @@ export default function RoutineList() {
     setEditing(null);
   }
 
-  async function deleteRoutine(routine: Routine) {
-    if (!confirm(`Supprimer "${routine.title}" et tout son historique ?`)) return;
-    setRoutines((prev) => prev.filter((r) => r.id !== routine.id));
-    setCompletions((prev) => prev.filter((c) => c.routine_id !== routine.id));
-    await getSupabase().from("routines").delete().eq("id", routine.id);
+  async function deleteEditingRoutine() {
+    if (!editing) return;
+    const id = editing.id;
+    setRoutines((prev) => prev.filter((r) => r.id !== id));
+    setCompletions((prev) => prev.filter((c) => c.routine_id !== id));
+    await getSupabase().from("routines").delete().eq("id", id);
+    setShowForm(false);
+    setEditing(null);
   }
 
   return (
@@ -196,7 +199,7 @@ export default function RoutineList() {
                       r.days_of_week
                     )}
                     onToggle={() => toggleCompletion(r)}
-                    onEdit={() => {
+                    onOpen={() => {
                       setEditing(r);
                       setShowForm(true);
                     }}
@@ -226,11 +229,10 @@ export default function RoutineList() {
                       completedByRoutine.get(r.id) ?? new Set(),
                       r.days_of_week
                     )}
-                    onEdit={() => {
+                    onOpen={() => {
                       setEditing(r);
                       setShowForm(true);
                     }}
-                    onDelete={() => deleteRoutine(r)}
                   />
                 ))}
               </ul>
@@ -257,6 +259,7 @@ export default function RoutineList() {
               setShowForm(false);
               setEditing(null);
             }}
+            onDelete={editing ? deleteEditingRoutine : undefined}
           />
         )}
       </div>
@@ -269,23 +272,21 @@ function RoutineCard({
   done,
   streak,
   onToggle,
-  onEdit,
+  onOpen,
 }: {
   routine: Routine;
   done: boolean;
   streak: number;
   onToggle: () => void;
-  onEdit: () => void;
+  onOpen: () => void;
 }) {
   const cat = CATEGORIES[routine.category];
   const Icon = cat.icon;
 
   return (
     <li
-      className={`group flex items-center gap-4 rounded-2xl border p-4 transition-all ${
-        done
-          ? "border-primary/30 bg-primary/5"
-          : "border-border bg-card hover:border-primary/30"
+      className={`flex items-center gap-4 rounded-2xl border p-4 transition-all ${
+        done ? "border-primary/30 bg-primary/5" : "border-border bg-card"
       }`}
     >
       <button
@@ -300,7 +301,7 @@ function RoutineCard({
         {done ? <Check className="h-5 w-5" /> : <Icon className={`h-5 w-5 ${cat.color}`} />}
       </button>
 
-      <div className="min-w-0 flex-1">
+      <button onClick={onOpen} className="min-w-0 flex-1 text-left">
         <p
           className={`truncate text-sm font-medium ${
             done ? "text-muted-foreground line-through" : "text-foreground"
@@ -318,7 +319,7 @@ function RoutineCard({
             </>
           )}
         </div>
-      </div>
+      </button>
 
       {streak > 0 && (
         <div className="flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-1 text-xs font-semibold text-orange-400">
@@ -326,13 +327,6 @@ function RoutineCard({
           {streak}
         </div>
       )}
-
-      <button
-        onClick={onEdit}
-        className="opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground/60 hover:text-foreground"
-      >
-        <Pencil className="h-4 w-4" />
-      </button>
     </li>
   );
 }
@@ -340,61 +334,61 @@ function RoutineCard({
 function RoutineRow({
   routine,
   streak,
-  onEdit,
-  onDelete,
+  onOpen,
 }: {
   routine: Routine;
   streak: number;
-  onEdit: () => void;
-  onDelete: () => void;
+  onOpen: () => void;
 }) {
   const cat = CATEGORIES[routine.category];
   const Icon = cat.icon;
 
   return (
-    <li className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background ${cat.color}`}>
-        <Icon className="h-4 w-4" />
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground">{routine.title}</p>
-        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>{cat.label}</span>
-          <span>·</span>
-          <span>
-            {DISPLAY_ORDER.map((dayIndex) => (
-              <span
-                key={dayIndex}
-                className={
-                  routine.days_of_week.includes(dayIndex) ? "text-foreground" : "opacity-30"
-                }
-              >
-                {DAYS_SHORT[dayIndex]}
-              </span>
-            ))}
-          </span>
-          {routine.time_of_day && (
-            <>
-              <span>·</span>
-              <span>{routine.time_of_day.slice(0, 5)}</span>
-            </>
-          )}
+    <li>
+      <button
+        onClick={onOpen}
+        className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/30 active:bg-card/60"
+      >
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background ${cat.color}`}
+        >
+          <Icon className="h-4 w-4" />
         </div>
-      </div>
 
-      {streak > 0 && (
-        <div className="flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-0.5 text-xs font-semibold text-orange-400">
-          <Flame className="h-3 w-3" />
-          {streak}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-foreground">{routine.title}</p>
+          <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span>{cat.label}</span>
+            <span>·</span>
+            <span>
+              {DISPLAY_ORDER.map((dayIndex) => (
+                <span
+                  key={dayIndex}
+                  className={
+                    routine.days_of_week.includes(dayIndex) ? "text-foreground" : "opacity-30"
+                  }
+                >
+                  {DAYS_SHORT[dayIndex]}
+                </span>
+              ))}
+            </span>
+            {routine.time_of_day && (
+              <>
+                <span>·</span>
+                <span>{routine.time_of_day.slice(0, 5)}</span>
+              </>
+            )}
+          </div>
         </div>
-      )}
 
-      <button onClick={onEdit} className="text-muted-foreground/60 hover:text-foreground">
-        <Pencil className="h-4 w-4" />
-      </button>
-      <button onClick={onDelete} className="text-muted-foreground/60 hover:text-destructive">
-        <Trash2 className="h-4 w-4" />
+        {streak > 0 && (
+          <div className="flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-0.5 text-xs font-semibold text-orange-400">
+            <Flame className="h-3 w-3" />
+            {streak}
+          </div>
+        )}
+
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40" />
       </button>
     </li>
   );
