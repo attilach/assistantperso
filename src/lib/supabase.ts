@@ -16,5 +16,7 @@ export type Task = {
   id: string;
   title: string;
   completed: boolean;
+  is_focus: boolean;
+  focus_at: string | null;
   created_at: string;
 };

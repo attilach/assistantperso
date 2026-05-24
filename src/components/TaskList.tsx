@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import TaskSkeleton from "@/components/TaskSkeleton";
-import { Check, Plus, Trash2, AlertCircle, X } from "lucide-react";
+import { Check, Plus, Trash2, AlertCircle, X, Star } from "lucide-react";
 
 export default function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -46,6 +46,8 @@ export default function TaskList() {
       id: crypto.randomUUID(),
       title,
       completed: false,
+      is_focus: false,
+      focus_at: null,
       created_at: new Date().toISOString(),
     };
     setTasks((prev) => [optimistic, ...prev]);
@@ -76,6 +78,18 @@ export default function TaskList() {
   async function deleteTask(id: string) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     await getSupabase().from("tasks").delete().eq("id", id);
+  }
+
+  async function toggleFocus(task: Task) {
+    const next = !task.is_focus;
+    const focusAt = next ? new Date().toISOString() : null;
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, is_focus: next, focus_at: focusAt } : t))
+    );
+    await getSupabase()
+      .from("tasks")
+      .update({ is_focus: next, focus_at: focusAt })
+      .eq("id", task.id);
   }
 
   async function clearCompleted() {
@@ -169,6 +183,7 @@ export default function TaskList() {
                   onToggle={toggleTask}
                   onDelete={deleteTask}
                   onUpdateTitle={updateTitle}
+                  onToggleFocus={toggleFocus}
                 />
               ))}
             </ul>
@@ -207,6 +222,7 @@ export default function TaskList() {
                   onToggle={toggleTask}
                   onDelete={deleteTask}
                   onUpdateTitle={updateTitle}
+                  onToggleFocus={toggleFocus}
                 />
               ))}
             </ul>
@@ -222,11 +238,13 @@ function TaskItem({
   onToggle,
   onDelete,
   onUpdateTitle,
+  onToggleFocus,
 }: {
   task: Task;
   onToggle: (task: Task) => void;
   onDelete: (id: string) => void;
   onUpdateTitle: (task: Task, title: string) => void;
+  onToggleFocus: (task: Task) => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(task.title);
@@ -252,7 +270,13 @@ function TaskItem({
   }
 
   return (
-    <li className="group border-border bg-card hover:border-primary/30 flex items-center gap-3 rounded-xl border px-4 py-3 transition-all">
+    <li
+      className={`group flex items-center gap-3 rounded-xl border px-4 py-3 transition-all ${
+        task.is_focus && !task.completed
+          ? "border-yellow-400/40 bg-yellow-400/5"
+          : "border-border bg-card hover:border-primary/30"
+      }`}
+    >
       <button
         onClick={() => onToggle(task)}
         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
@@ -283,6 +307,18 @@ function TaskItem({
         >
           {task.title}
         </span>
+      )}
+
+      {!task.completed && (
+        <button
+          onClick={() => onToggleFocus(task)}
+          aria-label={task.is_focus ? "Retirer du focus" : "Marquer comme prioritaire"}
+          className={`transition-colors ${
+            task.is_focus ? "text-yellow-400" : "text-muted-foreground/30 hover:text-yellow-400"
+          }`}
+        >
+          <Star className={`h-4 w-4 ${task.is_focus ? "fill-yellow-400" : ""}`} />
+        </button>
       )}
 
       <button
