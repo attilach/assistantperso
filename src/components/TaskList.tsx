@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import TaskSkeleton from "@/components/TaskSkeleton";
+import NotificationToggle from "@/components/NotificationToggle";
 import { Check, Plus, Trash2, AlertCircle, X } from "lucide-react";
 
 export default function TaskList() {
@@ -107,6 +108,9 @@ export default function TaskList() {
             {loading ? "Chargement..." : `${pending.length} tâche${pending.length !== 1 ? "s" : ""} à faire`}
           </p>
         </div>
+
+        {/* Notifications */}
+        <NotificationToggle />
 
         {/* Add task form */}
         <form onSubmit={addTask} className="mb-8 flex gap-2">
