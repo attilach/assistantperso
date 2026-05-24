@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, Loader2 } from "lucide-react";
+import { Lock, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/";
-  const [pin, setPin] = useState("");
+  const [code, setCode] = useState("");
+  const [showCode, setShowCode] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -17,18 +18,20 @@ export default function LoginForm() {
     inputRef.current?.focus();
   }, []);
 
-  async function submit(currentPin: string) {
+  async function submit(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!code.trim() || busy) return;
     setBusy(true);
     setError(null);
     try {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: currentPin }),
+        body: JSON.stringify({ pin: code }),
       });
       if (!res.ok) {
         setError("Code incorrect");
-        setPin("");
+        setCode("");
         inputRef.current?.focus();
         return;
       }
@@ -41,15 +44,6 @@ export default function LoginForm() {
     }
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.replace(/\D/g, "").slice(0, 4);
-    setPin(value);
-    setError(null);
-    if (value.length === 4) {
-      submit(value);
-    }
-  }
-
   return (
     <div
       className="bg-background flex min-h-screen flex-col items-center justify-center px-4"
@@ -58,7 +52,7 @@ export default function LoginForm() {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <div className="w-full max-w-xs">
+      <form onSubmit={submit} className="w-full max-w-xs">
         <div className="mb-8 text-center">
           <div className="bg-primary/10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
             <Lock className="text-primary h-7 w-7" />
@@ -67,55 +61,49 @@ export default function LoginForm() {
             Assistant Perso
           </p>
           <h1 className="text-foreground text-2xl font-bold">Entre ton code</h1>
-          <p className="text-muted-foreground mt-1 text-sm">4 chiffres pour déverrouiller</p>
         </div>
 
-        <div className="mb-3 flex justify-center gap-3">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className={`flex h-12 w-12 items-center justify-center rounded-xl border text-xl font-bold transition-all ${
-                pin.length > i
-                  ? "border-primary bg-primary/10 text-foreground"
-                  : "border-border bg-card text-muted-foreground"
-              } ${error ? "border-destructive/50" : ""}`}
+        <div className="mb-3 flex gap-2">
+          <div className="relative flex-1">
+            <input
+              ref={inputRef}
+              type={showCode ? "text" : "password"}
+              value={code}
+              onChange={(e) => {
+                setCode(e.target.value);
+                setError(null);
+              }}
+              disabled={busy}
+              autoComplete="current-password"
+              autoFocus
+              aria-label="Code d'accès"
+              placeholder="••••••••"
+              className={`bg-card text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-primary w-full rounded-xl border px-4 py-3 text-center font-mono text-lg tracking-widest outline-none focus-visible:ring-2 ${
+                error ? "border-destructive/50" : "border-border"
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowCode((v) => !v)}
+              className="text-muted-foreground/60 hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2"
+              tabIndex={-1}
+              aria-label={showCode ? "Masquer" : "Afficher"}
             >
-              {pin.length > i ? "●" : ""}
-            </div>
-          ))}
+              {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
-
-        <input
-          ref={inputRef}
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          autoComplete="off"
-          autoFocus
-          value={pin}
-          onChange={handleChange}
-          disabled={busy}
-          aria-label="Code PIN"
-          className="sr-only"
-        />
 
         <button
-          type="button"
-          onClick={() => inputRef.current?.focus()}
-          className="text-muted-foreground hover:text-foreground mx-auto block text-xs underline-offset-2 hover:underline"
+          type="submit"
+          disabled={!code.trim() || busy}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 mt-1 flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-medium transition-colors disabled:opacity-50"
         >
-          {busy ? (
-            <span className="inline-flex items-center gap-1">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Vérification...
-            </span>
-          ) : error ? (
-            <span className="text-destructive">{error} — touche ici pour réessayer</span>
-          ) : (
-            "Touche ici si le clavier ne s'ouvre pas"
-          )}
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Déverrouiller"}
         </button>
-      </div>
+
+        {error && <p className="text-destructive mt-3 text-center text-xs">{error}</p>}
+      </form>
     </div>
   );
 }
