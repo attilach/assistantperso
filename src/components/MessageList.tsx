@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
-import { type AgentMessage } from "@/lib/messages";
+import { type AgentMessage, stripMarkdown } from "@/lib/messages";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import MessageBody from "@/components/MessageBody";
 import { Inbox, Trash2, Check, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function MessageList() {
@@ -181,13 +182,17 @@ function MessageItem({
               {message.title}
             </p>
           )}
-          <p
-            className={`text-sm ${expanded ? "whitespace-pre-wrap" : "line-clamp-2"} ${
-              message.read ? "text-muted-foreground" : "text-foreground"
-            }`}
-          >
-            {message.body}
-          </p>
+          {expanded ? (
+            <MessageBody>{message.body}</MessageBody>
+          ) : (
+            <p
+              className={`line-clamp-2 text-sm ${
+                message.read ? "text-muted-foreground" : "text-foreground"
+              }`}
+            >
+              {stripMarkdown(message.body)}
+            </p>
+          )}
         </div>
 
         <span className="text-muted-foreground/40 mt-1 shrink-0">

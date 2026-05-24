@@ -86,3 +86,116 @@
     @apply font-sans;
   }
 }
+
+/* Markdown rendering for agent messages */
+.markdown > *:first-child {
+  margin-top: 0;
+}
+.markdown > *:last-child {
+  margin-bottom: 0;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  font-weight: 600;
+  margin: 1em 0 0.4em;
+  color: var(--foreground);
+}
+.markdown h1 {
+  font-size: 1.15rem;
+}
+.markdown h2 {
+  font-size: 1.05rem;
+}
+.markdown h3,
+.markdown h4 {
+  font-size: 1rem;
+}
+.markdown p {
+  margin: 0.5em 0;
+}
+.markdown ul,
+.markdown ol {
+  margin: 0.5em 0;
+  padding-left: 1.25rem;
+}
+.markdown ul {
+  list-style: disc;
+}
+.markdown ol {
+  list-style: decimal;
+}
+.markdown li {
+  margin: 0.15em 0;
+}
+.markdown li > p {
+  margin: 0;
+}
+.markdown strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.markdown em {
+  font-style: italic;
+}
+.markdown code {
+  background: color-mix(in oklch, var(--muted) 70%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+.markdown pre {
+  background: color-mix(in oklch, var(--muted) 70%, transparent);
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin: 0.75em 0;
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+.markdown pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+.markdown blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  margin: 0.5em 0;
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+.markdown hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1em 0;
+}
+.markdown table {
+  border-collapse: collapse;
+  margin: 0.75em 0;
+  font-size: 0.9em;
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+}
+.markdown th,
+.markdown td {
+  border: 1px solid var(--border);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+.markdown th {
+  background: color-mix(in oklch, var(--muted) 50%, transparent);
+  font-weight: 600;
+}
+.markdown input[type="checkbox"] {
+  margin-right: 0.4em;
+  accent-color: var(--primary);
+}
+.markdown img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 0.5em 0;
+}
