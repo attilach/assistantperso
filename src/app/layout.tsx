@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import Nav from "@/components/Nav";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -38,7 +39,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${plusJakartaSans.variable} dark h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <Nav />
+        {children}
+      </body>
     </html>
   );
 }

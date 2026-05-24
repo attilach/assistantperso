@@ -95,17 +95,17 @@ export default function TaskList() {
   const completed = tasks.filter((t) => t.completed);
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10">
+    <div className="min-h-screen bg-background px-4 py-8">
       <div className="mx-auto max-w-xl">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary">
-            Assistant Perso
+            Tâches
           </p>
-          <h1 className="text-3xl font-bold text-foreground">Mes tâches</h1>
+          <h1 className="text-3xl font-bold text-foreground">À faire</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {loading ? "Chargement..." : `${pending.length} tâche${pending.length !== 1 ? "s" : ""} à faire`}
+            {loading ? "Chargement..." : `${pending.length} tâche${pending.length !== 1 ? "s" : ""} en attente`}
           </p>
         </div>
 
