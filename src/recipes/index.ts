@@ -1,7 +1,9 @@
 import type { Recipe } from "@/lib/recipes";
+import pouletCurryCocoBatch from "./poulet-curry-coco-batch";
 import spaghettiBolognaise from "./spaghetti-bolognaise";
 
 export const recipes: Recipe[] = [
+  pouletCurryCocoBatch,
   spaghettiBolognaise,
   // ajoute ici les autres recettes au fur et à mesure
 ];
