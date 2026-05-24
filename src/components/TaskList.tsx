@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import TaskSkeleton from "@/components/TaskSkeleton";
-import { Check, Plus, Trash2, AlertCircle, X, Star } from "lucide-react";
+import { Check, Plus, AlertCircle, X, Star } from "lucide-react";
+import { useLongPress } from "@/lib/use-long-press";
 
 export default function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -248,6 +249,7 @@ function TaskItem({
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(task.title);
+  const [pressing, setPressing] = useState(false);
   const editRef = useRef<HTMLInputElement>(null);
 
   function startEdit() {
@@ -269,12 +271,53 @@ function TaskItem({
     }
   }
 
+  function requestDelete() {
+    setPressing(false);
+    if (confirm(`Supprimer "${task.title}" ?`)) {
+      onDelete(task.id);
+    }
+  }
+
+  const longPress = useLongPress(requestDelete, 550);
+
   return (
     <li
-      className={`group flex items-center gap-3 rounded-xl border px-4 py-3 transition-all ${
-        task.is_focus && !task.completed
-          ? "border-yellow-400/40 bg-yellow-400/5"
-          : "border-border bg-card hover:border-primary/30"
+      onTouchStart={(e) => {
+        if (editing) return;
+        setPressing(true);
+        longPress.onTouchStart(e);
+      }}
+      onTouchEnd={() => {
+        setPressing(false);
+        longPress.onTouchEnd();
+      }}
+      onTouchMove={() => {
+        setPressing(false);
+        longPress.onTouchMove();
+      }}
+      onTouchCancel={() => {
+        setPressing(false);
+        longPress.onTouchCancel();
+      }}
+      onMouseDown={() => {
+        if (editing) return;
+        setPressing(true);
+        longPress.onMouseDown();
+      }}
+      onMouseUp={() => {
+        setPressing(false);
+        longPress.onMouseUp();
+      }}
+      onMouseLeave={() => {
+        setPressing(false);
+        longPress.onMouseLeave();
+      }}
+      className={`flex items-center gap-3 rounded-xl border px-4 py-3 transition-all select-none ${
+        pressing
+          ? "border-destructive/40 bg-destructive/10 scale-[0.98]"
+          : task.is_focus && !task.completed
+            ? "border-yellow-400/40 bg-yellow-400/5"
+            : "border-border bg-card"
       }`}
     >
       <button
@@ -300,7 +343,7 @@ function TaskItem({
       ) : (
         <span
           onDoubleClick={startEdit}
-          title="Double-clic pour modifier"
+          title="Double-clic pour modifier — maintenir appuyé pour supprimer"
           className={`flex-1 cursor-text text-sm transition-all select-none ${
             task.completed ? "text-muted-foreground line-through" : "text-foreground"
           }`}
@@ -320,13 +363,6 @@ function TaskItem({
           <Star className={`h-4 w-4 ${task.is_focus ? "fill-yellow-400" : ""}`} />
         </button>
       )}
-
-      <button
-        onClick={() => onDelete(task.id)}
-        className="text-muted-foreground/50 hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
     </li>
   );
 }

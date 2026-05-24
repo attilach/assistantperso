@@ -193,10 +193,6 @@ export default function RoutineList() {
                       r.days_of_week
                     )}
                     onToggle={() => toggleCompletion(r)}
-                    onOpen={() => {
-                      setEditing(r);
-                      setShowForm(true);
-                    }}
                   />
                 ))}
               </ul>
@@ -266,13 +262,11 @@ function RoutineCard({
   done,
   streak,
   onToggle,
-  onOpen,
 }: {
   routine: Routine;
   done: boolean;
   streak: number;
   onToggle: () => void;
-  onOpen: () => void;
 }) {
   const cat = CATEGORIES[routine.category];
   const Icon = cat.icon;
@@ -295,7 +289,7 @@ function RoutineCard({
         {done ? <Check className="h-5 w-5" /> : <Icon className={`h-5 w-5 ${cat.color}`} />}
       </button>
 
-      <button onClick={onOpen} className="min-w-0 flex-1 text-left">
+      <div className="min-w-0 flex-1">
         <p
           className={`truncate text-sm font-medium ${
             done ? "text-muted-foreground line-through" : "text-foreground"
@@ -313,7 +307,7 @@ function RoutineCard({
             </>
           )}
         </div>
-      </button>
+      </div>
 
       {streak > 0 && (
         <div className="flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-1 text-xs font-semibold text-orange-400">
