@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CATEGORIES, DAYS_SHORT, type Routine, type RoutineCategory } from "@/lib/routines";
+import {
+  CATEGORIES,
+  DAYS_SHORT,
+  DISPLAY_ORDER,
+  type Routine,
+  type RoutineCategory,
+} from "@/lib/routines";
 import { X } from "lucide-react";
 
 type Props = {
@@ -118,20 +124,20 @@ export default function RoutineForm({ initial, onSubmit, onCancel }: Props) {
             Jours
           </label>
           <div className="flex gap-1.5">
-            {DAYS_SHORT.map((label, i) => {
-              const active = days.includes(i);
+            {DISPLAY_ORDER.map((dayIndex) => {
+              const active = days.includes(dayIndex);
               return (
                 <button
-                  key={i}
+                  key={dayIndex}
                   type="button"
-                  onClick={() => toggleDay(i)}
+                  onClick={() => toggleDay(dayIndex)}
                   className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold transition-all ${
                     active
                       ? "border-primary bg-primary text-primary-foreground"
                       : "border-border bg-background text-muted-foreground hover:border-primary/40"
                   }`}
                 >
-                  {label}
+                  {DAYS_SHORT[dayIndex]}
                 </button>
               );
             })}

@@ -6,6 +6,7 @@ import {
   CATEGORIES,
   DAYS_LONG,
   DAYS_SHORT,
+  DISPLAY_ORDER,
   computeStreak,
   isScheduledToday,
   todayDateStr,
@@ -362,12 +363,14 @@ function RoutineRow({
           <span>{cat.label}</span>
           <span>·</span>
           <span>
-            {DAYS_SHORT.map((label, i) => (
+            {DISPLAY_ORDER.map((dayIndex) => (
               <span
-                key={i}
-                className={routine.days_of_week.includes(i) ? "text-foreground" : "opacity-30"}
+                key={dayIndex}
+                className={
+                  routine.days_of_week.includes(dayIndex) ? "text-foreground" : "opacity-30"
+                }
               >
-                {label}
+                {DAYS_SHORT[dayIndex]}
               </span>
             ))}
           </span>

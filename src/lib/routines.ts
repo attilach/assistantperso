@@ -30,6 +30,7 @@ export const CATEGORIES: Record<
   autre: { label: "Autre", icon: Pin, color: "text-slate-400" },
 };
 
+// JS getDay() convention: 0 = dimanche … 6 = samedi (matches DB storage)
 export const DAYS_SHORT = ["D", "L", "M", "M", "J", "V", "S"];
 export const DAYS_LONG = [
   "dimanche",
@@ -40,6 +41,9 @@ export const DAYS_LONG = [
   "vendredi",
   "samedi",
 ];
+
+// Display order: la semaine commence le lundi (FR)
+export const DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export function todayDow(): number {
   return new Date().getDay();
