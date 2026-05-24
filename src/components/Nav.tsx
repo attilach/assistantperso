@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CheckSquare, Repeat } from "lucide-react";
+import { CheckSquare, Repeat, Settings } from "lucide-react";
 
 const TABS = [
   { href: "/", label: "Tâches", icon: CheckSquare },
@@ -11,6 +11,7 @@ const TABS = [
 
 export default function Nav() {
   const pathname = usePathname();
+  const settingsActive = pathname === "/settings";
 
   return (
     <nav
@@ -35,6 +36,20 @@ export default function Nav() {
             </Link>
           );
         })}
+
+        <div className="flex-1" />
+
+        <Link
+          href="/settings"
+          aria-label="Réglages"
+          className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+            settingsActive
+              ? "bg-primary/15 text-primary"
+              : "text-muted-foreground hover:bg-card hover:text-foreground"
+          }`}
+        >
+          <Settings className="h-4 w-4" />
+        </Link>
       </div>
     </nav>
   );
