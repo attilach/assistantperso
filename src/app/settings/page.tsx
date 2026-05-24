@@ -1,5 +1,6 @@
 import NotificationToggle from "@/components/NotificationToggle";
 import NagSettings from "@/components/NagSettings";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function SettingsPage() {
   return (
@@ -21,6 +22,11 @@ export default function SettingsPage() {
         {/* Rappels */}
         <Section title="Rappels">
           <NagSettings />
+        </Section>
+
+        {/* Compte */}
+        <Section title="Compte">
+          <LogoutButton />
         </Section>
 
         {/* À propos */}

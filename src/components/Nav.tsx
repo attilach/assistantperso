@@ -19,6 +19,7 @@ export default function Nav() {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    if (pathname === "/login") return;
     async function fetchUnread() {
       const { count } = await getSupabase()
         .from("agent_messages")
@@ -28,6 +29,8 @@ export default function Nav() {
     }
     fetchUnread();
   }, [pathname]);
+
+  if (pathname === "/login") return null;
 
   return (
     <nav
