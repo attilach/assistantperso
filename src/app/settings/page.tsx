@@ -1,4 +1,5 @@
 import NotificationToggle from "@/components/NotificationToggle";
+import NagSettings from "@/components/NagSettings";
 
 export default function SettingsPage() {
   return (
@@ -15,6 +16,11 @@ export default function SettingsPage() {
         {/* Notifications section */}
         <Section title="Notifications">
           <NotificationToggle />
+        </Section>
+
+        {/* Rappels */}
+        <Section title="Rappels">
+          <NagSettings />
         </Section>
 
         {/* À propos */}
