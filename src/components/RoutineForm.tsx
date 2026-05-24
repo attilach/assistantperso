@@ -61,16 +61,16 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-t-2xl border border-border bg-card p-6 shadow-2xl sm:rounded-2xl"
+        className="border-border bg-card w-full max-w-md rounded-t-2xl border p-6 shadow-2xl sm:rounded-2xl"
       >
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-foreground text-lg font-semibold">
             {initial?.id ? "Modifier la routine" : "Nouvelle routine"}
           </h2>
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-full p-1"
           >
             <X className="h-4 w-4" />
           </button>
@@ -78,7 +78,7 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
 
         {/* Titre */}
         <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <label className="text-muted-foreground mb-1.5 block text-xs font-semibold tracking-widest uppercase">
             Titre
           </label>
           <Input
@@ -92,7 +92,7 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
 
         {/* Catégorie */}
         <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <label className="text-muted-foreground mb-1.5 block text-xs font-semibold tracking-widest uppercase">
             Catégorie
           </label>
           <div className="flex flex-wrap gap-2">
@@ -121,7 +121,7 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
 
         {/* Jours */}
         <div className="mb-4">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <label className="text-muted-foreground mb-1.5 block text-xs font-semibold tracking-widest uppercase">
             Jours
           </label>
           <div className="flex gap-1.5">
@@ -147,7 +147,7 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
 
         {/* Heure */}
         <div className="mb-6">
-          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <label className="text-muted-foreground mb-1.5 block text-xs font-semibold tracking-widest uppercase">
             Heure (optionnel)
           </label>
           <Input
@@ -172,7 +172,7 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
           <Button
             type="submit"
             disabled={busy || !title.trim() || days.length === 0}
-            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 flex-1"
           >
             {initial?.id ? "Enregistrer" : "Créer"}
           </Button>
@@ -181,7 +181,7 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
         {/* Danger zone — uniquement en mode édition */}
         {initial?.id && onDelete && (
           <>
-            <div className="my-5 h-px bg-border" />
+            <div className="bg-border my-5 h-px" />
             <button
               type="button"
               onClick={async () => {
@@ -194,7 +194,7 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
                 }
               }}
               disabled={busy}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+              className="border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 flex w-full items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" />
               Supprimer cette routine

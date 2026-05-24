@@ -17,25 +17,24 @@ export default function TaskList() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    async function fetchTasks() {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error } = await getSupabase()
+          .from("tasks")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        setTasks(data ?? []);
+      } catch {
+        setError("Impossible de charger les tâches. Vérifie ta connexion Supabase.");
+      } finally {
+        setLoading(false);
+      }
+    }
     fetchTasks();
   }, []);
-
-  async function fetchTasks() {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error } = await getSupabase()
-        .from("tasks")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      setTasks(data ?? []);
-    } catch {
-      setError("Impossible de charger les tâches. Vérifie ta connexion Supabase.");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function addTask(e: React.FormEvent) {
     e.preventDefault();
@@ -51,11 +50,7 @@ export default function TaskList() {
     };
     setTasks((prev) => [optimistic, ...prev]);
 
-    const { data, error } = await getSupabase()
-      .from("tasks")
-      .insert({ title })
-      .select()
-      .single();
+    const { data, error } = await getSupabase().from("tasks").insert({ title }).select().single();
 
     if (error) {
       setTasks((prev) => prev.filter((t) => t.id !== optimistic.id));
@@ -94,17 +89,18 @@ export default function TaskList() {
   const completed = tasks.filter((t) => t.completed);
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
+    <div className="bg-background min-h-screen px-4 py-8">
       <div className="mx-auto max-w-xl">
-
         {/* Header */}
         <div className="mb-6">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary">
+          <p className="text-primary mb-1 text-xs font-semibold tracking-widest uppercase">
             Tâches
           </p>
-          <h1 className="text-3xl font-bold text-foreground">À faire</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {loading ? "Chargement..." : `${pending.length} tâche${pending.length !== 1 ? "s" : ""} en attente`}
+          <h1 className="text-foreground text-3xl font-bold">À faire</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {loading
+              ? "Chargement..."
+              : `${pending.length} tâche${pending.length !== 1 ? "s" : ""} en attente`}
           </p>
         </div>
 
@@ -120,7 +116,7 @@ export default function TaskList() {
           <Button
             type="submit"
             disabled={!newTitle.trim()}
-            className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -128,7 +124,7 @@ export default function TaskList() {
 
         {/* Error state */}
         {error && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="border-destructive/30 bg-destructive/10 text-destructive mb-6 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span className="flex-1">{error}</span>
             <button onClick={() => setError(null)}>
@@ -143,10 +139,10 @@ export default function TaskList() {
         {/* Empty state */}
         {!loading && tasks.length === 0 && !error && (
           <div className="py-16 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Check className="h-6 w-6 text-primary" />
+            <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+              <Check className="text-primary h-6 w-6" />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Aucune tâche pour l&apos;instant.
               <br />
               Ajoute ta première tâche ci-dessus.
@@ -161,7 +157,7 @@ export default function TaskList() {
               <Badge variant="secondary" className="text-xs font-medium">
                 {pending.length}
               </Badge>
-              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <span className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
                 À faire
               </span>
             </div>
@@ -181,7 +177,7 @@ export default function TaskList() {
 
         {/* Separator */}
         {!loading && pending.length > 0 && completed.length > 0 && (
-          <Separator className="my-6 bg-border" />
+          <Separator className="bg-border my-6" />
         )}
 
         {/* Completed tasks */}
@@ -192,13 +188,13 @@ export default function TaskList() {
                 <Badge variant="secondary" className="text-xs font-medium">
                   {completed.length}
                 </Badge>
-                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <span className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
                   Terminées
                 </span>
               </div>
               <button
                 onClick={clearCompleted}
-                className="text-xs text-muted-foreground/60 transition-colors hover:text-destructive"
+                className="text-muted-foreground/60 hover:text-destructive text-xs transition-colors"
               >
                 Tout effacer
               </button>
@@ -256,7 +252,7 @@ function TaskItem({
   }
 
   return (
-    <li className="group flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-all hover:border-primary/30">
+    <li className="group border-border bg-card hover:border-primary/30 flex items-center gap-3 rounded-xl border px-4 py-3 transition-all">
       <button
         onClick={() => onToggle(task)}
         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
@@ -275,13 +271,13 @@ function TaskItem({
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent text-sm text-foreground outline-none"
+          className="text-foreground flex-1 bg-transparent text-sm outline-none"
         />
       ) : (
         <span
           onDoubleClick={startEdit}
           title="Double-clic pour modifier"
-          className={`flex-1 cursor-text select-none text-sm transition-all ${
+          className={`flex-1 cursor-text text-sm transition-all select-none ${
             task.completed ? "text-muted-foreground line-through" : "text-foreground"
           }`}
         >
@@ -291,7 +287,7 @@ function TaskItem({
 
       <button
         onClick={() => onDelete(task.id)}
-        className="opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground/50 hover:text-destructive"
+        className="text-muted-foreground/50 hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100"
       >
         <Trash2 className="h-4 w-4" />
       </button>

@@ -40,9 +40,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "routine not found" }, { status: 404 });
   }
 
-  const { data: subs } = await admin
-    .from("push_subscriptions")
-    .select("endpoint, p256dh, auth");
+  const { data: subs } = await admin.from("push_subscriptions").select("endpoint, p256dh, auth");
 
   if (!subs?.length) {
     return NextResponse.json({ sent: 0, total: 0 });

@@ -32,15 +32,7 @@ export const CATEGORIES: Record<
 
 // JS getDay() convention: 0 = dimanche … 6 = samedi (matches DB storage)
 export const DAYS_SHORT = ["D", "L", "M", "M", "J", "V", "S"];
-export const DAYS_LONG = [
-  "dimanche",
-  "lundi",
-  "mardi",
-  "mercredi",
-  "jeudi",
-  "vendredi",
-  "samedi",
-];
+export const DAYS_LONG = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 
 // Display order: la semaine commence le lundi (FR)
 export const DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
@@ -65,10 +57,7 @@ export function isScheduledToday(routine: Routine): boolean {
  * Compute streak (consecutive completed days ending today or yesterday).
  * `completions` should be the set of completed dates for one routine, ordered desc.
  */
-export function computeStreak(
-  completedDates: Set<string>,
-  scheduledDows: number[]
-): number {
+export function computeStreak(completedDates: Set<string>, scheduledDows: number[]): number {
   let streak = 0;
   const cursor = new Date();
   // Allow a "free pass" if today wasn't scheduled but yesterday was completed.

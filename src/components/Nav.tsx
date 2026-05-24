@@ -15,7 +15,7 @@ export default function Nav() {
 
   return (
     <nav
-      className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md"
+      className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="mx-auto flex max-w-xl items-center gap-1 px-4 py-3">

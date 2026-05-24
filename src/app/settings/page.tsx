@@ -2,14 +2,14 @@ import NotificationToggle from "@/components/NotificationToggle";
 
 export default function SettingsPage() {
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
+    <div className="bg-background min-h-screen px-4 py-8">
       <div className="mx-auto max-w-xl">
         {/* Header */}
         <div className="mb-6">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary">
+          <p className="text-primary mb-1 text-xs font-semibold tracking-widest uppercase">
             Paramètres
           </p>
-          <h1 className="text-3xl font-bold text-foreground">Réglages</h1>
+          <h1 className="text-foreground text-3xl font-bold">Réglages</h1>
         </div>
 
         {/* Notifications section */}
@@ -19,8 +19,8 @@ export default function SettingsPage() {
 
         {/* À propos */}
         <Section title="À propos">
-          <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-            <p className="mb-1 font-medium text-foreground">Assistant Perso</p>
+          <div className="border-border bg-card text-muted-foreground rounded-xl border p-4 text-sm">
+            <p className="text-foreground mb-1 font-medium">Assistant Perso</p>
             <p className="text-xs">Version 0.1 — propulsée par Next.js + Supabase</p>
           </div>
         </Section>
@@ -32,7 +32,7 @@ export default function SettingsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-8">
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+      <h2 className="text-muted-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
         {title}
       </h2>
       {children}

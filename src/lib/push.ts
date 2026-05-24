@@ -8,12 +8,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return output;
 }
 
-export type PushState =
-  | "unsupported"
-  | "needs-install"
-  | "denied"
-  | "default"
-  | "subscribed";
+export type PushState = "unsupported" | "needs-install" | "denied" | "default" | "subscribed";
 
 export function isStandalone(): boolean {
   if (typeof window === "undefined") return false;

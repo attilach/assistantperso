@@ -76,8 +76,8 @@ export default function NotificationToggle() {
   if (state === "needs-install") {
     return (
       <Banner tone="muted" icon={<Smartphone className="h-4 w-4" />}>
-        Sur iPhone, ajoute d&apos;abord l&apos;app à l&apos;écran d&apos;accueil (bouton Partager → &quot;Sur
-        l&apos;écran d&apos;accueil&quot;) puis ouvre-la depuis l&apos;icône.
+        Sur iPhone, ajoute d&apos;abord l&apos;app à l&apos;écran d&apos;accueil (bouton Partager →
+        &quot;Sur l&apos;écran d&apos;accueil&quot;) puis ouvre-la depuis l&apos;icône.
       </Banner>
     );
   }
@@ -91,11 +91,11 @@ export default function NotificationToggle() {
   }
 
   return (
-    <div className="mb-6 flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+    <div className="border-border bg-card mb-6 flex flex-col gap-2 rounded-xl border p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-sm">
-          <Bell className="h-4 w-4 text-primary" />
-          <span className="font-medium text-foreground">Notifications push</span>
+          <Bell className="text-primary h-4 w-4" />
+          <span className="text-foreground font-medium">Notifications push</span>
         </div>
 
         {state === "default" ? (
@@ -131,7 +131,7 @@ export default function NotificationToggle() {
           </div>
         )}
       </div>
-      {msg && <p className="text-xs text-muted-foreground">{msg}</p>}
+      {msg && <p className="text-muted-foreground text-xs">{msg}</p>}
     </div>
   );
 }

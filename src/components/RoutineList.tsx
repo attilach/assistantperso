@@ -15,9 +15,7 @@ import {
   type RoutineCategory,
   type RoutineCompletion,
 } from "@/lib/routines";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import RoutineForm from "@/components/RoutineForm";
 import { Check, ChevronRight, Plus, Flame, Clock, Loader2 } from "lucide-react";
 
@@ -30,24 +28,23 @@ export default function RoutineList() {
   const [editing, setEditing] = useState<Routine | null>(null);
 
   useEffect(() => {
+    async function fetchAll() {
+      setLoading(true);
+      const sb = getSupabase();
+      const since = new Date();
+      since.setDate(since.getDate() - 60);
+      const sinceStr = since.toISOString().slice(0, 10);
+
+      const [r, c] = await Promise.all([
+        sb.from("routines").select("*").order("created_at", { ascending: false }),
+        sb.from("routine_completions").select("*").gte("completed_date", sinceStr),
+      ]);
+      setRoutines(r.data ?? []);
+      setCompletions(c.data ?? []);
+      setLoading(false);
+    }
     fetchAll();
   }, []);
-
-  async function fetchAll() {
-    setLoading(true);
-    const sb = getSupabase();
-    const since = new Date();
-    since.setDate(since.getDate() - 60);
-    const sinceStr = since.toISOString().slice(0, 10);
-
-    const [r, c] = await Promise.all([
-      sb.from("routines").select("*").order("created_at", { ascending: false }),
-      sb.from("routine_completions").select("*").gte("completed_date", sinceStr),
-    ]);
-    setRoutines(r.data ?? []);
-    setCompletions(c.data ?? []);
-    setLoading(false);
-  }
 
   const today = todayDateStr();
   const todayDowNum = todayDow();
@@ -63,9 +60,7 @@ export default function RoutineList() {
   }, [completions]);
 
   const todayRoutines = routines.filter(isScheduledToday);
-  const todayDone = todayRoutines.filter((r) =>
-    completedByRoutine.get(r.id)?.has(today)
-  ).length;
+  const todayDone = todayRoutines.filter((r) => completedByRoutine.get(r.id)?.has(today)).length;
 
   async function toggleCompletion(routine: Routine) {
     const dates = completedByRoutine.get(routine.id);
@@ -136,19 +131,18 @@ export default function RoutineList() {
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
+    <div className="bg-background min-h-screen px-4 py-8">
       <div className="mx-auto max-w-xl">
-
         {/* Header */}
         <div className="mb-6">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary">
+          <p className="text-primary mb-1 text-xs font-semibold tracking-widest uppercase">
             Routines
           </p>
-          <h1 className="text-3xl font-bold capitalize text-foreground">
+          <h1 className="text-foreground text-3xl font-bold capitalize">
             {DAYS_LONG[todayDowNum]}
           </h1>
           {!loading && tab === "today" && todayRoutines.length > 0 && (
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-sm">
               {todayDone} / {todayRoutines.length} accompli
               {todayDone > 1 ? "es" : ""}
             </p>
@@ -156,7 +150,7 @@ export default function RoutineList() {
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 flex gap-1 rounded-full border border-border bg-card p-1">
+        <div className="border-border bg-card mb-6 flex gap-1 rounded-full border p-1">
           {(["today", "all"] as const).map((t) => (
             <button
               key={t}
@@ -173,7 +167,7 @@ export default function RoutineList() {
         </div>
 
         {loading && (
-          <div className="flex justify-center py-16 text-muted-foreground">
+          <div className="text-muted-foreground flex justify-center py-16">
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
         )}
@@ -245,7 +239,7 @@ export default function RoutineList() {
           <button
             onClick={() => setShowForm(true)}
             style={{ bottom: "calc(env(safe-area-inset-bottom) + 1.5rem)" }}
-            className="fixed right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 fixed right-6 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105"
           >
             <Plus className="h-6 w-6" />
           </button>
@@ -309,7 +303,7 @@ function RoutineCard({
         >
           {routine.title}
         </p>
-        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
           <span>{cat.label}</span>
           {routine.time_of_day && (
             <>
@@ -347,17 +341,17 @@ function RoutineRow({
     <li>
       <button
         onClick={onOpen}
-        className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/30 active:bg-card/60"
+        className="border-border bg-card hover:border-primary/30 active:bg-card/60 flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-colors"
       >
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background ${cat.color}`}
+          className={`bg-background flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${cat.color}`}
         >
           <Icon className="h-4 w-4" />
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-foreground">{routine.title}</p>
-          <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <p className="text-foreground truncate text-sm font-medium">{routine.title}</p>
+          <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
             <span>{cat.label}</span>
             <span>·</span>
             <span>
@@ -388,28 +382,17 @@ function RoutineRow({
           </div>
         )}
 
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40" />
+        <ChevronRight className="text-muted-foreground/40 h-4 w-4 shrink-0" />
       </button>
     </li>
   );
 }
 
-function EmptyState({
-  message,
-  cta,
-  onCta,
-}: {
-  message: string;
-  cta: string;
-  onCta: () => void;
-}) {
+function EmptyState({ message, cta, onCta }: { message: string; cta: string; onCta: () => void }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-card/50 p-10 text-center">
-      <p className="mb-4 text-sm text-muted-foreground">{message}</p>
-      <Button
-        onClick={onCta}
-        className="bg-primary text-primary-foreground hover:bg-primary/90"
-      >
+    <div className="border-border bg-card/50 rounded-2xl border border-dashed p-10 text-center">
+      <p className="text-muted-foreground mb-4 text-sm">{message}</p>
+      <Button onClick={onCta} className="bg-primary text-primary-foreground hover:bg-primary/90">
         <Plus className="mr-1 h-4 w-4" />
         {cta}
       </Button>
