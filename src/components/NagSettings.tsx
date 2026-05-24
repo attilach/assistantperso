@@ -84,6 +84,11 @@ export default function NagSettings() {
                 value={settings.nag_routines_enabled}
                 onChange={(v) => update({ nag_routines_enabled: v })}
               />
+              <Toggle
+                label="M'inviter à créer une tâche quand tout est fait"
+                value={settings.nag_when_empty_enabled}
+                onChange={(v) => update({ nag_when_empty_enabled: v })}
+              />
             </div>
           </div>
 

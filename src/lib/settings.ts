@@ -5,6 +5,7 @@ export type AppSettings = {
   nag_interval_minutes: number;
   nag_tasks_enabled: boolean;
   nag_routines_enabled: boolean;
+  nag_when_empty_enabled: boolean;
   nag_start_hour: number;
   nag_end_hour: number;
   last_nag_at: string | null;
