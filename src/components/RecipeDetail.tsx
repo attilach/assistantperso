@@ -34,7 +34,7 @@ export default function RecipeDetail({ recipe }: { recipe: Recipe }) {
   const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
 
   return (
-    <div className="bg-background min-h-screen px-4 py-6">
+    <div className="bg-background flex-1 px-4 py-6">
       <div className="mx-auto max-w-xl">
         {/* Back */}
         <Link

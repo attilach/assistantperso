@@ -70,7 +70,7 @@ export default function MessageList() {
   }
 
   return (
-    <div className="bg-background min-h-screen px-4 py-8">
+    <div className="bg-background flex-1 px-4 py-8">
       <div className="mx-auto max-w-xl">
         {/* Header */}
         <div className="mb-6 flex items-end justify-between gap-4">
