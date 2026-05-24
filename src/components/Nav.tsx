@@ -13,7 +13,10 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
+    <nav
+      className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div className="mx-auto flex max-w-xl items-center gap-1 px-4 py-3">
         {TABS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;

@@ -241,7 +241,8 @@ export default function RoutineList() {
         {!loading && (routines.length > 0 || tab === "all") && (
           <button
             onClick={() => setShowForm(true)}
-            className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:bg-primary/90"
+            style={{ bottom: "calc(env(safe-area-inset-bottom) + 1.5rem)" }}
+            className="fixed right-6 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-105 hover:bg-primary/90"
           >
             <Plus className="h-6 w-6" />
           </button>
