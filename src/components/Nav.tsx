@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, CheckSquare, Repeat, Inbox, Settings, UtensilsCrossed } from "lucide-react";
+import { Home, CheckSquare, Repeat, Inbox, Settings, UtensilsCrossed, Compass } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
 const TABS = [
   { href: "/", label: "Accueil", icon: Home },
   { href: "/tasks", label: "Tâches", icon: CheckSquare },
   { href: "/routines", label: "Routines", icon: Repeat },
+  { href: "/quetes", label: "Quêtes", icon: Compass },
   { href: "/cuisine", label: "Cuisine", icon: UtensilsCrossed },
   { href: "/messages", label: "Messages", icon: Inbox },
 ];

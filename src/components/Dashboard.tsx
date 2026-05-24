@@ -12,6 +12,7 @@ import {
   type Routine,
 } from "@/lib/routines";
 import { stripMarkdown, type AgentMessage } from "@/lib/messages";
+import { type Quest } from "@/lib/quests";
 import {
   CheckSquare,
   Repeat,
@@ -21,6 +22,7 @@ import {
   Sparkles,
   Star,
   Check,
+  Target,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -69,6 +71,7 @@ export default function Dashboard() {
   const [todayRoutines, setTodayRoutines] = useState<Routine[]>([]);
   const [completedToday, setCompletedToday] = useState<Set<string>>(new Set());
   const [unreadMessages, setUnreadMessages] = useState<AgentMessage[]>([]);
+  const [focusQuest, setFocusQuest] = useState<Quest | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyOneThing, setBusyOneThing] = useState(false);
 
@@ -76,7 +79,7 @@ export default function Dashboard() {
     async function fetchAll() {
       const sb = getSupabase();
       const today = todayDateStr();
-      const [tasksRes, routinesRes, completionsRes, messagesRes] = await Promise.all([
+      const [tasksRes, routinesRes, completionsRes, messagesRes, questRes] = await Promise.all([
         sb
           .from("tasks")
           .select("*")
@@ -90,11 +93,13 @@ export default function Dashboard() {
           .eq("read", false)
           .order("created_at", { ascending: false })
           .limit(3),
+        sb.from("quests").select("*").eq("is_focus", true).eq("status", "active").maybeSingle(),
       ]);
       setPendingTasks(tasksRes.data ?? []);
       setTodayRoutines((routinesRes.data ?? []).filter(isScheduledToday));
       setCompletedToday(new Set((completionsRes.data ?? []).map((c) => c.routine_id)));
       setUnreadMessages(messagesRes.data ?? []);
+      setFocusQuest(questRes.data ?? null);
       setLoading(false);
     }
     fetchAll();
@@ -133,12 +138,29 @@ export default function Dashboard() {
     <div className="bg-background min-h-screen px-4 py-8">
       <div className="mx-auto max-w-xl">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4">
           <p className="text-primary mb-1 text-xs font-semibold tracking-widest uppercase">
             Aujourd&apos;hui
           </p>
           <h1 className="text-foreground text-3xl font-bold capitalize">{dateLabel}</h1>
         </div>
+
+        {/* Focus quest reminder */}
+        {focusQuest && (
+          <Link
+            href="/quetes"
+            className="border-primary/20 bg-primary/5 hover:bg-primary/10 mb-4 flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors"
+          >
+            <Target className="text-primary h-4 w-4 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-primary text-[10px] font-semibold tracking-widest uppercase">
+                Focus principal
+              </p>
+              <p className="text-foreground truncate text-sm font-semibold">{focusQuest.title}</p>
+            </div>
+            <ChevronRight className="text-primary/60 h-4 w-4 shrink-0" />
+          </Link>
+        )}
 
         {loading && (
           <div className="text-muted-foreground flex justify-center py-16">
