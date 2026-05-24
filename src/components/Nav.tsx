@@ -3,19 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CheckSquare, Repeat, Settings, Inbox } from "lucide-react";
+import { Home, CheckSquare, Repeat, Inbox, Settings } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
 
 const TABS = [
-  { href: "/", label: "Tâches", icon: CheckSquare },
+  { href: "/", label: "Accueil", icon: Home },
+  { href: "/tasks", label: "Tâches", icon: CheckSquare },
   { href: "/routines", label: "Routines", icon: Repeat },
   { href: "/messages", label: "Messages", icon: Inbox },
+  { href: "/settings", label: "Réglages", icon: Settings },
 ];
 
 export default function Nav() {
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
-  const settingsActive = pathname === "/settings";
 
   useEffect(() => {
     async function fetchUnread() {
@@ -30,10 +31,10 @@ export default function Nav() {
 
   return (
     <nav
-      className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
+      className="border-border bg-background/90 fixed right-0 bottom-0 left-0 z-40 border-t backdrop-blur-md"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="mx-auto flex max-w-xl items-center gap-1 px-3 py-3 sm:px-4">
+      <div className="mx-auto flex max-w-xl items-stretch">
         {TABS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           const showBadge = href === "/messages" && unreadCount > 0;
@@ -41,36 +42,20 @@ export default function Nav() {
             <Link
               key={href}
               href={href}
-              className={`relative flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-colors sm:gap-2 sm:px-4 ${
-                active
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-card hover:text-foreground"
+              className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <span className="relative">
-                <Icon className="h-4 w-4" />
+                <Icon className="h-5 w-5" />
                 {showBadge && (
-                  <span className="bg-primary ring-background absolute -top-1 -right-1 h-2 w-2 rounded-full ring-2" />
+                  <span className="bg-primary ring-background absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ring-2" />
                 )}
               </span>
-              {label}
+              <span className="leading-tight">{label}</span>
             </Link>
           );
         })}
-
-        <div className="flex-1" />
-
-        <Link
-          href="/settings"
-          aria-label="Réglages"
-          className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-            settingsActive
-              ? "bg-primary/15 text-primary"
-              : "text-muted-foreground hover:bg-card hover:text-foreground"
-          }`}
-        >
-          <Settings className="h-4 w-4" />
-        </Link>
       </div>
     </nav>
   );

@@ -39,9 +39,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${plusJakartaSans.variable} dark h-full antialiased`}>
-      <body className="flex min-h-full flex-col">
-        <Nav />
+      <body
+        className="flex min-h-full flex-col"
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 4.5rem)",
+        }}
+      >
         {children}
+        <Nav />
       </body>
     </html>
   );

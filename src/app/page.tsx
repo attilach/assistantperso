@@ -1,5 +1,5 @@
-import TaskList from "@/components/TaskList";
+import Dashboard from "@/components/Dashboard";
 
 export default function Home() {
-  return <TaskList />;
+  return <Dashboard />;
 }
