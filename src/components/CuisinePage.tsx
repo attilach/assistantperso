@@ -1,13 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import ShoppingList from "@/components/ShoppingList";
 import RecipeList from "@/components/RecipeList";
 
 type Tab = "list" | "recipes";
 
 export default function CuisinePage() {
-  const [tab, setTab] = useState<Tab>("list");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab: Tab = searchParams.get("tab") === "recipes" ? "recipes" : "list";
+
+  function setTab(t: Tab) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (t === "list") {
+      params.delete("tab");
+    } else {
+      params.set("tab", t);
+    }
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }
 
   return (
     <div className="bg-background min-h-screen px-4 py-8">

@@ -38,7 +38,7 @@ export default function RecipeDetail({ recipe }: { recipe: Recipe }) {
       <div className="mx-auto max-w-xl">
         {/* Back */}
         <Link
-          href="/cuisine"
+          href="/cuisine?tab=recipes"
           className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-sm"
         >
           <ArrowLeft className="h-4 w-4" />
