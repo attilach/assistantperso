@@ -3,12 +3,14 @@ import bowlFourPoulet from "./bowl-four-poulet";
 import bowlFourSteak from "./bowl-four-steak";
 import burgerSauceShakeShake from "./burger-sauce-shake-shake";
 import chiliConCarneBatch from "./chili-con-carne-batch";
+import patesThonTomate from "./pates-thon-tomate";
 import penneArrabbiata from "./penne-arrabbiata";
 import pouletCurryCocoBatch from "./poulet-curry-coco-batch";
 
 export const recipes: Recipe[] = [
   bowlFourPoulet,
   bowlFourSteak,
+  patesThonTomate,
   pouletCurryCocoBatch,
   chiliConCarneBatch,
   penneArrabbiata,
