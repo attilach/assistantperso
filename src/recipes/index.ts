@@ -3,6 +3,7 @@ import bowlFourPoulet from "./bowl-four-poulet";
 import bowlFourSteak from "./bowl-four-steak";
 import burgerSauceShakeShake from "./burger-sauce-shake-shake";
 import chiliConCarneBatch from "./chili-con-carne-batch";
+import penneArrabbiata from "./penne-arrabbiata";
 import pouletCurryCocoBatch from "./poulet-curry-coco-batch";
 
 export const recipes: Recipe[] = [
@@ -10,6 +11,7 @@ export const recipes: Recipe[] = [
   bowlFourSteak,
   pouletCurryCocoBatch,
   chiliConCarneBatch,
+  penneArrabbiata,
   burgerSauceShakeShake,
 ];
 
