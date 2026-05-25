@@ -137,9 +137,11 @@ export function isCompletedForPeriod(
 /**
  * Should this routine appear in the "Aujourd'hui" view?
  *
- * - weekly: scheduled today (whether completed or not — we show ticked)
- * - monthly: due (today or earlier this month) AND not completed this month
- * - yearly: due (today or earlier this year) AND not completed this year
+ * - weekly: scheduled today (visible all day, ticked once completed)
+ * - monthly/yearly: due (today or earlier in the period) AND either not yet
+ *   completed for the period, OR completed *today* (so the user still sees
+ *   what they just ticked off, like the weekly behaviour). Tomorrow it
+ *   disappears until the next period.
  */
 export function shouldShowToday(
   routine: Routine,
@@ -150,7 +152,14 @@ export function shouldShowToday(
   if (routine.frequency_type === "weekly") {
     return routine.days_of_week.includes(now.getDay());
   }
-  return isDueByNow(routine, now) && !isCompletedForPeriod(routine, completedDates, now);
+  if (!isDueByNow(routine, now)) return false;
+  if (!isCompletedForPeriod(routine, completedDates, now)) return true;
+  // Completed for the period — keep visible only if the completion was today
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}-${String(now.getDate()).padStart(2, "0")}`;
+  return completedDates.has(todayStr);
 }
 
 /**
