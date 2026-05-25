@@ -6,8 +6,10 @@ import chiliConCarneBatch from "./chili-con-carne-batch";
 import patesThonTomate from "./pates-thon-tomate";
 import penneArrabbiata from "./penne-arrabbiata";
 import pouletCurryCocoBatch from "./poulet-curry-coco-batch";
+import wrapDindePhiladelphia from "./wrap-dinde-philadelphia";
 
 export const recipes: Recipe[] = [
+  wrapDindePhiladelphia,
   bowlFourPoulet,
   bowlFourSteak,
   patesThonTomate,
