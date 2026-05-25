@@ -6,7 +6,8 @@ import { getSupabase, type Task } from "@/lib/supabase";
 import {
   CATEGORIES,
   DAYS_LONG,
-  isScheduledToday,
+  isCompletedForPeriod,
+  shouldShowToday,
   todayDateStr,
   todayDow,
   type Routine,
@@ -69,7 +70,7 @@ function computeOneThing(remainingRoutines: Routine[], pendingTasks: Task[]): On
 export default function Dashboard() {
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [todayRoutines, setTodayRoutines] = useState<Routine[]>([]);
-  const [completedToday, setCompletedToday] = useState<Set<string>>(new Set());
+  const [completedByRoutine, setCompletedByRoutine] = useState<Map<string, Set<string>>>(new Map());
   const [unreadMessages, setUnreadMessages] = useState<AgentMessage[]>([]);
   const [focusQuest, setFocusQuest] = useState<Quest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,7 +79,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchAll() {
       const sb = getSupabase();
-      const today = todayDateStr();
+      const yearStart = `${new Date().getFullYear()}-01-01`;
       const [tasksRes, routinesRes, completionsRes, messagesRes, questRes] = await Promise.all([
         sb
           .from("tasks")
@@ -86,7 +87,10 @@ export default function Dashboard() {
           .eq("completed", false)
           .order("created_at", { ascending: false }),
         sb.from("routines").select("*").eq("active", true),
-        sb.from("routine_completions").select("routine_id").eq("completed_date", today),
+        sb
+          .from("routine_completions")
+          .select("routine_id, completed_date")
+          .gte("completed_date", yearStart),
         sb
           .from("agent_messages")
           .select("*")
@@ -95,9 +99,21 @@ export default function Dashboard() {
           .limit(3),
         sb.from("quests").select("*").eq("is_focus", true).eq("status", "active").maybeSingle(),
       ]);
+
+      // Build the per-routine completion set (covers weekly/monthly/yearly periods)
+      const map = new Map<string, Set<string>>();
+      for (const c of (completionsRes.data ?? []) as {
+        routine_id: string;
+        completed_date: string;
+      }[]) {
+        if (!map.has(c.routine_id)) map.set(c.routine_id, new Set());
+        map.get(c.routine_id)!.add(c.completed_date);
+      }
+
+      const allRoutines = (routinesRes.data ?? []) as Routine[];
       setPendingTasks(tasksRes.data ?? []);
-      setTodayRoutines((routinesRes.data ?? []).filter(isScheduledToday));
-      setCompletedToday(new Set((completionsRes.data ?? []).map((c) => c.routine_id)));
+      setTodayRoutines(allRoutines.filter((r) => shouldShowToday(r, map.get(r.id) ?? new Set())));
+      setCompletedByRoutine(map);
       setUnreadMessages(messagesRes.data ?? []);
       setFocusQuest(questRes.data ?? null);
       setLoading(false);
@@ -106,8 +122,12 @@ export default function Dashboard() {
   }, []);
 
   const dateLabel = DAYS_LONG[todayDow()];
-  const todayDoneCount = todayRoutines.filter((r) => completedToday.has(r.id)).length;
-  const remainingRoutines = todayRoutines.filter((r) => !completedToday.has(r.id));
+  const todayDoneCount = todayRoutines.filter((r) =>
+    isCompletedForPeriod(r, completedByRoutine.get(r.id) ?? new Set())
+  ).length;
+  const remainingRoutines = todayRoutines.filter(
+    (r) => !isCompletedForPeriod(r, completedByRoutine.get(r.id) ?? new Set())
+  );
   const oneThing = !loading ? computeOneThing(remainingRoutines, pendingTasks) : null;
 
   async function completeOneThing(target: NonNullable<OneThing>) {
@@ -115,10 +135,17 @@ export default function Dashboard() {
     try {
       const sb = getSupabase();
       if (target.kind === "routine") {
-        setCompletedToday((prev) => new Set(prev).add(target.routine.id));
+        const today = todayDateStr();
+        setCompletedByRoutine((prev) => {
+          const next = new Map(prev);
+          const set = new Set(next.get(target.routine.id) ?? []);
+          set.add(today);
+          next.set(target.routine.id, set);
+          return next;
+        });
         await sb
           .from("routine_completions")
-          .insert({ routine_id: target.routine.id, completed_date: todayDateStr() });
+          .insert({ routine_id: target.routine.id, completed_date: today });
       } else {
         setPendingTasks((prev) => prev.filter((t) => t.id !== target.task.id));
         await sb.from("tasks").update({ completed: true }).eq("id", target.task.id);

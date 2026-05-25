@@ -5,19 +5,46 @@ import { getSupabase } from "@/lib/supabase";
 import {
   CATEGORIES,
   DAYS_LONG,
-  DAYS_SHORT,
-  DISPLAY_ORDER,
   computeStreak,
-  isScheduledToday,
+  describeSchedule,
+  isCompletedForPeriod,
+  shouldShowToday,
   todayDateStr,
   todayDow,
+  type FrequencyType,
   type Routine,
   type RoutineCategory,
   type RoutineCompletion,
 } from "@/lib/routines";
 import { Button } from "@/components/ui/button";
 import RoutineForm from "@/components/RoutineForm";
-import { Check, ChevronRight, Plus, Flame, Clock, Loader2 } from "lucide-react";
+import {
+  Check,
+  ChevronRight,
+  Plus,
+  Flame,
+  Clock,
+  Loader2,
+  CalendarDays,
+  CalendarRange,
+  CalendarCheck2,
+} from "lucide-react";
+
+type FormPayload = {
+  title: string;
+  category: RoutineCategory;
+  frequency_type: FrequencyType;
+  days_of_week: number[];
+  day_of_month: number | null;
+  month_of_year: number | null;
+  time_of_day: string | null;
+};
+
+const FREQ_GROUPS: { value: FrequencyType; label: string; icon: typeof CalendarDays }[] = [
+  { value: "weekly", label: "Hebdomadaires", icon: CalendarDays },
+  { value: "monthly", label: "Mensuelles", icon: CalendarRange },
+  { value: "yearly", label: "Annuelles", icon: CalendarCheck2 },
+];
 
 export default function RoutineList() {
   const [routines, setRoutines] = useState<Routine[]>([]);
@@ -31,8 +58,11 @@ export default function RoutineList() {
     async function fetchAll() {
       setLoading(true);
       const sb = getSupabase();
+      // Fetch from start of last year so monthly streaks are meaningful
       const since = new Date();
-      since.setDate(since.getDate() - 60);
+      since.setFullYear(since.getFullYear() - 1);
+      since.setMonth(0);
+      since.setDate(1);
       const sinceStr = since.toISOString().slice(0, 10);
 
       const [r, c] = await Promise.all([
@@ -49,7 +79,6 @@ export default function RoutineList() {
   const today = todayDateStr();
   const todayDowNum = todayDow();
 
-  // Build a map: routine_id → Set<date>
   const completedByRoutine = useMemo(() => {
     const map = new Map<string, Set<string>>();
     for (const c of completions) {
@@ -59,26 +88,41 @@ export default function RoutineList() {
     return map;
   }, [completions]);
 
-  const todayRoutines = routines.filter(isScheduledToday);
-  const todayDone = todayRoutines.filter((r) => completedByRoutine.get(r.id)?.has(today)).length;
+  const todayRoutines = routines.filter((r) =>
+    shouldShowToday(r, completedByRoutine.get(r.id) ?? new Set())
+  );
+  const todayDone = todayRoutines.filter((r) =>
+    isCompletedForPeriod(r, completedByRoutine.get(r.id) ?? new Set())
+  ).length;
 
   async function toggleCompletion(routine: Routine) {
-    const dates = completedByRoutine.get(routine.id);
-    const isDone = dates?.has(today);
+    const dates = completedByRoutine.get(routine.id) ?? new Set();
+    const isDone = isCompletedForPeriod(routine, dates);
     const sb = getSupabase();
 
     if (isDone) {
-      // remove completion
+      // For weekly: remove today's completion. For monthly/yearly: remove the
+      // single completion of this period (any one).
+      let target = today;
+      if (routine.frequency_type !== "weekly") {
+        const now = new Date();
+        const yyyy = now.getFullYear().toString();
+        const prefix =
+          routine.frequency_type === "monthly"
+            ? `${yyyy}-${String(now.getMonth() + 1).padStart(2, "0")}-`
+            : `${yyyy}-`;
+        const found = Array.from(dates).find((d) => d.startsWith(prefix));
+        if (found) target = found;
+      }
       setCompletions((prev) =>
-        prev.filter((c) => !(c.routine_id === routine.id && c.completed_date === today))
+        prev.filter((c) => !(c.routine_id === routine.id && c.completed_date === target))
       );
       await sb
         .from("routine_completions")
         .delete()
         .eq("routine_id", routine.id)
-        .eq("completed_date", today);
+        .eq("completed_date", target);
     } else {
-      // add completion (optimistic)
       const optimistic: RoutineCompletion = {
         id: crypto.randomUUID(),
         routine_id: routine.id,
@@ -97,12 +141,7 @@ export default function RoutineList() {
     }
   }
 
-  async function saveRoutine(payload: {
-    title: string;
-    category: RoutineCategory;
-    days_of_week: number[];
-    time_of_day: string | null;
-  }) {
+  async function saveRoutine(payload: FormPayload) {
     const sb = getSupabase();
     if (editing) {
       const { data } = await sb
@@ -183,24 +222,24 @@ export default function RoutineList() {
               />
             ) : (
               <ul className="space-y-2">
-                {todayRoutines.map((r) => (
-                  <RoutineCard
-                    key={r.id}
-                    routine={r}
-                    done={completedByRoutine.get(r.id)?.has(today) ?? false}
-                    streak={computeStreak(
-                      completedByRoutine.get(r.id) ?? new Set(),
-                      r.days_of_week
-                    )}
-                    onToggle={() => toggleCompletion(r)}
-                  />
-                ))}
+                {todayRoutines.map((r) => {
+                  const completedSet = completedByRoutine.get(r.id) ?? new Set();
+                  return (
+                    <RoutineCard
+                      key={r.id}
+                      routine={r}
+                      done={isCompletedForPeriod(r, completedSet)}
+                      streak={computeStreak(r, completedSet)}
+                      onToggle={() => toggleCompletion(r)}
+                    />
+                  );
+                })}
               </ul>
             )}
           </>
         )}
 
-        {/* All view */}
+        {/* All view, grouped by frequency */}
         {!loading && tab === "all" && (
           <>
             {routines.length === 0 ? (
@@ -210,22 +249,36 @@ export default function RoutineList() {
                 onCta={() => setShowForm(true)}
               />
             ) : (
-              <ul className="space-y-2">
-                {routines.map((r) => (
-                  <RoutineRow
-                    key={r.id}
-                    routine={r}
-                    streak={computeStreak(
-                      completedByRoutine.get(r.id) ?? new Set(),
-                      r.days_of_week
-                    )}
-                    onOpen={() => {
-                      setEditing(r);
-                      setShowForm(true);
-                    }}
-                  />
-                ))}
-              </ul>
+              <div className="space-y-6">
+                {FREQ_GROUPS.map((group) => {
+                  const items = routines.filter((r) => r.frequency_type === group.value);
+                  if (items.length === 0) return null;
+                  const Icon = group.icon;
+                  return (
+                    <section key={group.value}>
+                      <div className="mb-2 flex items-center gap-2">
+                        <Icon className="text-muted-foreground h-3.5 w-3.5" />
+                        <p className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                          {group.label}
+                        </p>
+                      </div>
+                      <ul className="space-y-2">
+                        {items.map((r) => (
+                          <RoutineRow
+                            key={r.id}
+                            routine={r}
+                            streak={computeStreak(r, completedByRoutine.get(r.id) ?? new Set())}
+                            onOpen={() => {
+                              setEditing(r);
+                              setShowForm(true);
+                            }}
+                          />
+                        ))}
+                      </ul>
+                    </section>
+                  );
+                })}
+              </div>
             )}
           </>
         )}
@@ -270,6 +323,12 @@ function RoutineCard({
 }) {
   const cat = CATEGORIES[routine.category];
   const Icon = cat.icon;
+  const periodHint =
+    routine.frequency_type === "monthly"
+      ? "ce mois-ci"
+      : routine.frequency_type === "yearly"
+        ? "cette année"
+        : null;
 
   return (
     <li
@@ -299,6 +358,12 @@ function RoutineCard({
         </p>
         <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
           <span>{cat.label}</span>
+          {periodHint && (
+            <>
+              <span>·</span>
+              <span>{periodHint}</span>
+            </>
+          )}
           {routine.time_of_day && (
             <>
               <span>·</span>
@@ -348,18 +413,7 @@ function RoutineRow({
           <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 text-xs">
             <span>{cat.label}</span>
             <span>·</span>
-            <span>
-              {DISPLAY_ORDER.map((dayIndex) => (
-                <span
-                  key={dayIndex}
-                  className={
-                    routine.days_of_week.includes(dayIndex) ? "text-foreground" : "opacity-30"
-                  }
-                >
-                  {DAYS_SHORT[dayIndex]}
-                </span>
-              ))}
-            </span>
+            <span className="truncate">{describeSchedule(routine)}</span>
             {routine.time_of_day && (
               <>
                 <span>·</span>
