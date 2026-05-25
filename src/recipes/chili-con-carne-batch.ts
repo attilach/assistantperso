@@ -4,7 +4,7 @@ const recipe: Recipe = {
   slug: "chili-con-carne-batch",
   title: "Chili con carne (batch)",
   emoji: "🌶️",
-  category: "Plat principal",
+  category: "batch",
   description: "6 portions en une fois. Se congèle parfaitement, ~38 g de protéines par portion.",
   prepTime: 15,
   cookTime: 40,

@@ -4,7 +4,7 @@ const recipe: Recipe = {
   slug: "bowl-four-steak",
   title: "Bowl au four — steak haché, brocolis & feta",
   emoji: "🥩",
-  category: "Plat principal",
+  category: "healthy",
   description: "Même technique que la version poulet, mais avec du steak haché 5%.",
   prepTime: 5,
   cookTime: 40,

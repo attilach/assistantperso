@@ -4,7 +4,7 @@ const recipe: Recipe = {
   slug: "poulet-curry-coco-batch",
   title: "Poulet curry rouge au lait de coco",
   emoji: "🍛",
-  category: "Plat principal",
+  category: "batch",
   description: "Batch cooking : crémeux, riche en protéines, se conserve 4-5 jours au frigo.",
   prepTime: 15,
   cookTime: 30,

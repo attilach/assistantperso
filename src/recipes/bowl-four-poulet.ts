@@ -4,7 +4,7 @@ const recipe: Recipe = {
   slug: "bowl-four-poulet",
   title: "Bowl au four — poulet, brocolis & feta",
   emoji: "🥦",
-  category: "Plat principal",
+  category: "healthy",
   description: "Tout cuit dans un bol en verre, riz inclus. 40 min au four, zéro vaisselle.",
   prepTime: 5,
   cookTime: 40,

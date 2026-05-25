@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { recipes } from "@/recipes";
+import { RECIPE_CATEGORIES, type Recipe } from "@/lib/recipes";
 import { addRecipeToShoppingList } from "@/lib/shopping";
 import { ChevronRight, Clock, Plus, Loader2, BookOpen } from "lucide-react";
 
@@ -51,50 +52,71 @@ export default function RecipeList() {
         </div>
       )}
 
-      <ul className="space-y-2">
-        {recipes.map((r) => {
-          const totalTime = (r.prepTime ?? 0) + (r.cookTime ?? 0);
-          const busy = busyId === r.slug;
+      <div className="space-y-6">
+        {RECIPE_CATEGORIES.map((cat) => {
+          const items = recipes.filter((r) => r.category === cat.value);
+          if (items.length === 0) return null;
           return (
-            <li
-              key={r.slug}
-              className="border-border bg-card hover:border-primary/30 flex items-center gap-3 rounded-xl border p-3 transition-colors"
-            >
-              <Link
-                href={`/cuisine/recettes/${r.slug}`}
-                className="flex min-w-0 flex-1 items-center gap-3"
-              >
-                <div className="bg-background flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl">
-                  {r.emoji ?? "🍽️"}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate text-sm font-semibold">{r.title}</p>
-                  <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
-                    {r.category && <span>{r.category}</span>}
-                    {totalTime > 0 && (
-                      <>
-                        {r.category && <span>·</span>}
-                        <Clock className="h-3 w-3" />
-                        <span>{totalTime} min</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <ChevronRight className="text-muted-foreground/40 h-4 w-4 shrink-0" />
-              </Link>
-
-              <button
-                onClick={() => addToShopping(r.slug)}
-                disabled={busy}
-                aria-label="Ajouter aux courses"
-                className="bg-primary/15 text-primary hover:bg-primary/25 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-50"
-              >
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              </button>
-            </li>
+            <section key={cat.value}>
+              <div className="mb-2 flex items-center gap-1.5">
+                <span className="text-sm">{cat.emoji}</span>
+                <p className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                  {cat.label}
+                </p>
+              </div>
+              <ul className="space-y-2">
+                {items.map((r) => (
+                  <RecipeItem
+                    key={r.slug}
+                    recipe={r}
+                    busy={busyId === r.slug}
+                    onAdd={() => addToShopping(r.slug)}
+                  />
+                ))}
+              </ul>
+            </section>
           );
         })}
-      </ul>
+      </div>
     </div>
+  );
+}
+
+function RecipeItem({ recipe, busy, onAdd }: { recipe: Recipe; busy: boolean; onAdd: () => void }) {
+  const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0);
+  return (
+    <li className="border-border bg-card hover:border-primary/30 flex items-center gap-3 rounded-xl border p-3 transition-colors">
+      <Link
+        href={`/cuisine/recettes/${recipe.slug}`}
+        className="flex min-w-0 flex-1 items-center gap-3"
+      >
+        <div className="bg-background flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl">
+          {recipe.emoji ?? "🍽️"}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-foreground truncate text-sm font-semibold">{recipe.title}</p>
+          <div className="text-muted-foreground mt-0.5 flex items-center gap-2 text-xs">
+            <span>{recipe.servings} pers.</span>
+            {totalTime > 0 && (
+              <>
+                <span>·</span>
+                <Clock className="h-3 w-3" />
+                <span>{totalTime} min</span>
+              </>
+            )}
+          </div>
+        </div>
+        <ChevronRight className="text-muted-foreground/40 h-4 w-4 shrink-0" />
+      </Link>
+
+      <button
+        onClick={onAdd}
+        disabled={busy}
+        aria-label="Ajouter aux courses"
+        className="bg-primary/15 text-primary hover:bg-primary/25 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-50"
+      >
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+      </button>
+    </li>
   );
 }

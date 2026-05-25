@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { type Recipe, formatQuantity } from "@/lib/recipes";
+import { categoryLabel, type Recipe, formatQuantity } from "@/lib/recipes";
 import { addRecipeToShoppingList } from "@/lib/shopping";
 import { ArrowLeft, Clock, Users, Plus, Loader2, Check } from "lucide-react";
 
@@ -51,11 +51,9 @@ export default function RecipeDetail({ recipe }: { recipe: Recipe }) {
             {recipe.emoji ?? "🍽️"}
           </div>
           <div className="min-w-0 flex-1">
-            {recipe.category && (
-              <p className="text-primary mb-0.5 text-xs font-semibold tracking-widest uppercase">
-                {recipe.category}
-              </p>
-            )}
+            <p className="text-primary mb-0.5 text-xs font-semibold tracking-widest uppercase">
+              {categoryLabel(recipe.category)}
+            </p>
             <h1 className="text-foreground text-2xl leading-tight font-bold">{recipe.title}</h1>
             {recipe.description && (
               <p className="text-muted-foreground mt-1 text-sm">{recipe.description}</p>

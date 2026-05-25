@@ -16,12 +16,14 @@ export type Ingredient = {
   note?: string;
 };
 
+export type RecipeCategory = "healthy" | "batch" | "cheat";
+
 export type Recipe = {
   slug: string;
   title: string;
   emoji?: string;
   description?: string;
-  category?: "Entrée" | "Plat principal" | "Dessert" | "Petit-déjeuner" | "Snack" | "Autre";
+  category: RecipeCategory;
   /** Minutes. */
   prepTime?: number;
   cookTime?: number;
@@ -31,6 +33,17 @@ export type Recipe = {
   steps: string[];
   notes?: string;
 };
+
+/** Display metadata for recipe categories, in render order (healthy first, cheat last). */
+export const RECIPE_CATEGORIES: { value: RecipeCategory; label: string; emoji: string }[] = [
+  { value: "healthy", label: "Healthy", emoji: "🥦" },
+  { value: "batch", label: "Batch cooking", emoji: "🍱" },
+  { value: "cheat", label: "Cheat meal", emoji: "🍔" },
+];
+
+export function categoryLabel(value: RecipeCategory): string {
+  return RECIPE_CATEGORIES.find((c) => c.value === value)?.label ?? value;
+}
 
 /** Normalize ingredient identity for shopping-list de-duplication. */
 export function ingredientKey(name: string, unit?: string): string {
