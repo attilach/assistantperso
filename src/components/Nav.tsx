@@ -56,9 +56,9 @@ export default function Nav() {
         <Settings className="h-4 w-4" />
       </Link>
 
-      {/* Bottom tab bar */}
+      {/* Bottom tab bar — dernier enfant du shell, donc toujours collé en bas */}
       <nav
-        className="border-border bg-background/90 fixed right-0 bottom-0 left-0 z-40 border-t backdrop-blur-md"
+        className="border-border bg-background z-40 shrink-0 border-t"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="mx-auto flex max-w-xl items-stretch">

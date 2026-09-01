@@ -89,7 +89,7 @@ export default function RoutineForm({ initial, onSubmit, onCancel, onDelete }: P
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center">
       <form
         onSubmit={handleSubmit}
-        className="border-border bg-card max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl border p-6 shadow-2xl sm:rounded-2xl"
+        className="border-border bg-card max-h-[92dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-t-2xl border p-6 shadow-2xl sm:rounded-2xl"
       >
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-foreground text-lg font-semibold">

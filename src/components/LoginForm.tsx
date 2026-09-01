@@ -46,11 +46,8 @@ export default function LoginForm() {
 
   return (
     <div
-      className="bg-background flex min-h-screen flex-col items-center justify-center px-4"
-      style={{
-        paddingTop: "env(safe-area-inset-top)",
-        paddingBottom: "env(safe-area-inset-bottom)",
-      }}
+      className="bg-background flex flex-1 flex-col items-center justify-center px-4"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <form onSubmit={submit} className="w-full max-w-xs">
         <div className="mb-8 text-center">

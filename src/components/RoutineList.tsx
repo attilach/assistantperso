@@ -170,7 +170,7 @@ export default function RoutineList() {
   }
 
   return (
-    <div className="bg-background flex-1 px-4 py-8">
+    <div className="bg-background flex-1 px-4 pt-8 pb-28">
       <div className="mx-auto max-w-xl">
         {/* Header */}
         <div className="mb-6">

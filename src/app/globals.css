@@ -79,6 +79,17 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* App shell : le document lui-même ne scrolle jamais (c'est <main> qui
+     scrolle). La barre d'onglets reste donc réellement collée en bas, quelle
+     que soit la quantité de contenu, et ne remonte plus avec le rebond
+     élastique ou la barre d'outils du navigateur mobile. */
+  html,
+  body {
+    height: 100%; /* repli pour les navigateurs sans unités dynamiques */
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
   body {
     @apply bg-background text-foreground;
   }

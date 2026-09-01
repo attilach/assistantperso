@@ -38,15 +38,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${plusJakartaSans.variable} dark h-full antialiased`}>
-      <body
-        className="flex min-h-full flex-col"
-        style={{
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 4.5rem)",
-        }}
-      >
-        {children}
+    <html lang="fr" className={`${plusJakartaSans.variable} dark antialiased`}>
+      <body className="flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <main className="flex flex-1 flex-col overflow-y-auto overscroll-y-contain">
+          {children}
+        </main>
         <Nav />
       </body>
     </html>
