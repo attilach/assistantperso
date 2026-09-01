@@ -59,7 +59,9 @@ export default function Nav() {
       {/* Bottom tab bar — dernier enfant du shell, donc toujours collé en bas */}
       <nav
         className="border-border bg-background z-40 shrink-0 border-t"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        // On récupère 14px des 34px de safe-area iOS : la barre descend plus
+        // bas sans que les labels mordent sur le home indicator (zone 8-13px).
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px) - 0.875rem, 0px)" }}
       >
         <div className="mx-auto flex max-w-xl items-stretch">
           {TABS.map(({ href, label, icon: Icon }) => {
