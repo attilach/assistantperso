@@ -1,15 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { recipes } from "@/recipes";
 import { RECIPE_CATEGORIES, type Recipe } from "@/lib/recipes";
 import { addRecipeToShoppingList } from "@/lib/shopping";
+import { precacheRoutes } from "@/lib/offline";
 import { ChevronRight, Clock, Plus, Loader2, BookOpen } from "lucide-react";
 
 export default function RecipeList() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Les fiches recettes s'ouvrent par un lien, donc leur document n'est jamais
+  // demandé au serveur : sans ce préchargement, aucune ne serait consultable
+  // hors ligne — or c'est en cuisine que le réseau manque le plus souvent.
+  useEffect(() => {
+    precacheRoutes(
+      recipes.map((r) => `/cuisine/recettes/${r.slug}`),
+      "recipes"
+    );
+  }, []);
 
   async function addToShopping(slug: string) {
     const recipe = recipes.find((r) => r.slug === slug);

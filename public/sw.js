@@ -33,18 +33,42 @@ async function cacheFirst(request) {
   return response;
 }
 
+// Page servie quand une navigation hors ligne ne trouve rien en cache. Servir
+// l'accueil à la place donnerait l'illusion d'une app bloquée sur une page.
+const OFFLINE_PAGE = `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hors ligne</title>
+<style>
+  body{margin:0;min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:.75rem;padding:2rem;text-align:center;background:#020617;
+    color:#f8fafc;font:400 15px/1.5 system-ui,-apple-system,sans-serif}
+  h1{font-size:1.1rem;font-weight:600;margin:0}
+  p{margin:0;color:#94a3b8;font-size:.875rem;max-width:22rem}
+  a{margin-top:.5rem;color:#22c55e;font-weight:600;text-decoration:none;font-size:.875rem}
+</style></head>
+<body>
+  <h1>Hors ligne</h1>
+  <p>Cette page n'a pas encore été enregistrée pour la consultation hors ligne. Ouvre-la une fois avec du réseau et elle sera disponible ensuite.</p>
+  <a href="/">Retour à l'accueil</a>
+</body></html>`;
+
 async function networkFirst(request) {
+  const isNavigation = request.mode === "navigate";
   try {
     const response = await fetch(request);
     await putInCache(request, response);
     return response;
   } catch (err) {
-    const cached = await caches.match(request);
+    // Sur une navigation, les paramètres d'URL (?tab=recipes) ne doivent pas
+    // empêcher de servir le document : la page les relit côté client.
+    const cached = await caches.match(request, { ignoreSearch: isNavigation });
     if (cached) return cached;
-    // Page jamais visitée : on ouvre sur le tableau de bord s'il est en cache.
-    if (request.mode === "navigate") {
-      const home = await caches.match("/");
-      if (home) return home;
+    if (isNavigation) {
+      return new Response(OFFLINE_PAGE, {
+        status: 503,
+        headers: { "content-type": "text/html; charset=utf-8" },
+      });
     }
     throw err;
   }

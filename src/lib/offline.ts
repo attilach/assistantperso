@@ -75,6 +75,46 @@ export async function cachedRead<T>(
   }
 }
 
+const PRECACHE_STAMP = "assistantperso:precache-at";
+const PRECACHE_INTERVAL_MS = 60 * 60 * 1000;
+
+/**
+ * Met en cache les documents des pages indiquées.
+ *
+ * Indispensable : la navigation par onglets passe par le routeur client de
+ * Next, qui ne récupère que des charges RSC. Aucune requête de document n'est
+ * donc jamais émise en usage normal, et sans cette amorce le cache resterait
+ * vide — l'app ne serait consultable sur aucune page hors ligne.
+ *
+ * Les requêtes traversent le service worker, qui les enregistre au passage.
+ */
+export async function precacheRoutes(routes: string[], group = "core"): Promise<void> {
+  if (typeof window === "undefined" || isOffline()) return;
+  if (!("serviceWorker" in navigator)) return;
+
+  // Rafraîchir à chaque ouverture coûterait une poignée de requêtes inutiles ;
+  // une fois par heure suffit à suivre les déploiements. Le compteur est par
+  // groupe, sinon le premier appel bloquerait les suivants.
+  try {
+    const stamp = `${PRECACHE_STAMP}:${group}`;
+    const last = Number(window.localStorage.getItem(stamp) ?? 0);
+    if (Date.now() - last < PRECACHE_INTERVAL_MS) return;
+    window.localStorage.setItem(stamp, String(Date.now()));
+  } catch {
+    // Stockage indisponible : on précharge quand même.
+  }
+
+  await navigator.serviceWorker.ready;
+  for (const route of routes) {
+    if (isOffline()) return;
+    try {
+      await fetch(route, { credentials: "same-origin" });
+    } catch {
+      // Une page qui échoue n'empêche pas les suivantes.
+    }
+  }
+}
+
 type Listener = () => void;
 const blockedListeners = new Set<Listener>();
 
