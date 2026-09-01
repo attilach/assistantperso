@@ -1,4 +1,5 @@
 import { getSupabase } from "@/lib/supabase";
+import { blockedOffline } from "@/lib/offline";
 import { ingredientKey, type Recipe } from "@/lib/recipes";
 
 export type ShoppingItem = {
@@ -18,6 +19,7 @@ export type ShoppingItem = {
 export async function addRecipeToShoppingList(
   recipe: Recipe
 ): Promise<{ inserted: number; merged: number }> {
+  if (blockedOffline()) return { inserted: 0, merged: 0 };
   const sb = getSupabase();
 
   const { data: existing } = await sb

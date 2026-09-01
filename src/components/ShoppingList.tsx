@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { blockedOffline, cachedRead } from "@/lib/offline";
 import { formatQuantity } from "@/lib/recipes";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,10 +28,9 @@ export default function ShoppingList() {
   useEffect(() => {
     async function fetchItems() {
       setLoading(true);
-      const { data } = await getSupabase()
-        .from("shopping_items")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await cachedRead<ShoppingItem[]>("shopping", () =>
+        getSupabase().from("shopping_items").select("*").order("created_at", { ascending: false })
+      );
       setItems(data ?? []);
       setLoading(false);
     }
@@ -41,6 +41,7 @@ export default function ShoppingList() {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
+    if (blockedOffline()) return;
     setNewName("");
 
     const optimistic: ShoppingItem = {
@@ -65,12 +66,14 @@ export default function ShoppingList() {
   }
 
   async function toggleItem(item: ShoppingItem) {
+    if (blockedOffline()) return;
     const next = !item.checked;
     setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, checked: next } : i)));
     await getSupabase().from("shopping_items").update({ checked: next }).eq("id", item.id);
   }
 
   async function deleteItem(id: string) {
+    if (blockedOffline()) return;
     setItems((prev) => prev.filter((i) => i.id !== id));
     await getSupabase().from("shopping_items").delete().eq("id", id);
   }
@@ -78,6 +81,7 @@ export default function ShoppingList() {
   async function clearChecked() {
     const checkedIds = items.filter((i) => i.checked).map((i) => i.id);
     if (!checkedIds.length) return;
+    if (blockedOffline()) return;
     if (
       !confirm(
         `Vider les ${checkedIds.length} article${checkedIds.length > 1 ? "s" : ""} achetés ?`

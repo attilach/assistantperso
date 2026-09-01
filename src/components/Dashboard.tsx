@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getSupabase, type Task } from "@/lib/supabase";
+import { blockedOffline, cachedRead } from "@/lib/offline";
 import {
   CATEGORIES,
   DAYS_LONG,
@@ -81,23 +82,33 @@ export default function Dashboard() {
       const sb = getSupabase();
       const yearStart = `${new Date().getFullYear()}-01-01`;
       const [tasksRes, routinesRes, completionsRes, messagesRes, questRes] = await Promise.all([
-        sb
-          .from("tasks")
-          .select("*")
-          .eq("completed", false)
-          .order("created_at", { ascending: false }),
-        sb.from("routines").select("*").eq("active", true),
-        sb
-          .from("routine_completions")
-          .select("routine_id, completed_date")
-          .gte("completed_date", yearStart),
-        sb
-          .from("agent_messages")
-          .select("*")
-          .eq("read", false)
-          .order("created_at", { ascending: false })
-          .limit(3),
-        sb.from("quests").select("*").eq("is_focus", true).eq("status", "active").maybeSingle(),
+        cachedRead<Task[]>("dash:tasks", () =>
+          sb
+            .from("tasks")
+            .select("*")
+            .eq("completed", false)
+            .order("created_at", { ascending: false })
+        ),
+        cachedRead<Routine[]>("dash:routines", () =>
+          sb.from("routines").select("*").eq("active", true)
+        ),
+        cachedRead<{ routine_id: string; completed_date: string }[]>("dash:completions", () =>
+          sb
+            .from("routine_completions")
+            .select("routine_id, completed_date")
+            .gte("completed_date", yearStart)
+        ),
+        cachedRead<AgentMessage[]>("dash:messages", () =>
+          sb
+            .from("agent_messages")
+            .select("*")
+            .eq("read", false)
+            .order("created_at", { ascending: false })
+            .limit(3)
+        ),
+        cachedRead<Quest>("dash:focus-quest", () =>
+          sb.from("quests").select("*").eq("is_focus", true).eq("status", "active").maybeSingle()
+        ),
       ]);
 
       // Build the per-routine completion set (covers weekly/monthly/yearly periods)
@@ -131,6 +142,7 @@ export default function Dashboard() {
   const oneThing = !loading ? computeOneThing(remainingRoutines, pendingTasks) : null;
 
   async function completeOneThing(target: NonNullable<OneThing>) {
+    if (blockedOffline()) return;
     setBusyOneThing(true);
     try {
       const sb = getSupabase();

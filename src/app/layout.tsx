@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import Nav from "@/components/Nav";
+import OfflineBanner from "@/components/OfflineBanner";
+import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -40,10 +42,12 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${plusJakartaSans.variable} dark antialiased`}>
       <body className="flex flex-col" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <OfflineBanner />
         <main className="flex flex-1 flex-col overflow-y-auto overscroll-y-contain">
           {children}
         </main>
         <Nav />
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );

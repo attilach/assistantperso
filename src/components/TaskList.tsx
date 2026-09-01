@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSupabase, type Task } from "@/lib/supabase";
+import { blockedOffline, cachedRead } from "@/lib/offline";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,18 +22,15 @@ export default function TaskList() {
     async function fetchTasks() {
       setLoading(true);
       setError(null);
-      try {
-        const { data, error } = await getSupabase()
-          .from("tasks")
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (error) throw error;
-        setTasks(data ?? []);
-      } catch {
+      const { data } = await cachedRead<Task[]>("tasks", () =>
+        getSupabase().from("tasks").select("*").order("created_at", { ascending: false })
+      );
+      if (data) {
+        setTasks(data);
+      } else {
         setError("Impossible de charger les tâches. Vérifie ta connexion Supabase.");
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     }
     fetchTasks();
   }, []);
@@ -41,6 +39,7 @@ export default function TaskList() {
     e.preventDefault();
     const title = newTitle.trim();
     if (!title) return;
+    if (blockedOffline()) return;
     setNewTitle("");
 
     const optimistic: Task = {
@@ -64,6 +63,7 @@ export default function TaskList() {
   }
 
   async function toggleTask(task: Task) {
+    if (blockedOffline()) return;
     const updated = !task.completed;
     setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, completed: updated } : t)));
     await getSupabase().from("tasks").update({ completed: updated }).eq("id", task.id);
@@ -72,16 +72,19 @@ export default function TaskList() {
   async function updateTitle(task: Task, title: string) {
     const trimmed = title.trim();
     if (!trimmed || trimmed === task.title) return;
+    if (blockedOffline()) return;
     setTasks((prev) => prev.map((t) => (t.id === task.id ? { ...t, title: trimmed } : t)));
     await getSupabase().from("tasks").update({ title: trimmed }).eq("id", task.id);
   }
 
   async function deleteTask(id: string) {
+    if (blockedOffline()) return;
     setTasks((prev) => prev.filter((t) => t.id !== id));
     await getSupabase().from("tasks").delete().eq("id", id);
   }
 
   async function toggleFocus(task: Task) {
+    if (blockedOffline()) return;
     const next = !task.is_focus;
     const focusAt = next ? new Date().toISOString() : null;
     setTasks((prev) =>
@@ -96,6 +99,7 @@ export default function TaskList() {
   async function clearCompleted() {
     const completedIds = tasks.filter((t) => t.completed).map((t) => t.id);
     if (!completedIds.length) return;
+    if (blockedOffline()) return;
     setTasks((prev) => prev.filter((t) => !t.completed));
     await getSupabase().from("tasks").delete().in("id", completedIds);
   }

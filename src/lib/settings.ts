@@ -1,4 +1,5 @@
 import { getSupabase } from "@/lib/supabase";
+import { cachedRead } from "@/lib/offline";
 
 export type AppSettings = {
   id: number;
@@ -21,9 +22,11 @@ export const INTERVAL_OPTIONS = [
   { value: 240, label: "Toutes les 4 heures" },
 ];
 
-export async function getAppSettings(): Promise<AppSettings> {
-  const { data } = await getSupabase().from("app_settings").select("*").eq("id", 1).single();
-  return data as AppSettings;
+export async function getAppSettings(): Promise<AppSettings | null> {
+  const { data } = await cachedRead<AppSettings>("app-settings", () =>
+    getSupabase().from("app_settings").select("*").eq("id", 1).single()
+  );
+  return data;
 }
 
 export async function updateAppSettings(patch: Partial<AppSettings>): Promise<void> {

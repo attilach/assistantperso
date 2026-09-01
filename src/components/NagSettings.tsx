@@ -8,6 +8,7 @@ import {
   INTERVAL_OPTIONS,
   type AppSettings,
 } from "@/lib/settings";
+import { blockedOffline } from "@/lib/offline";
 
 export default function NagSettings() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -19,6 +20,7 @@ export default function NagSettings() {
 
   async function update(patch: Partial<AppSettings>) {
     if (!settings) return;
+    if (blockedOffline()) return;
     setSettings({ ...settings, ...patch });
     setSaving(true);
     try {

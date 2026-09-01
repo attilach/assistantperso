@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { blockedOffline, cachedRead, isOffline } from "@/lib/offline";
 import { type AgentMessage, stripMarkdown } from "@/lib/messages";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,11 +17,13 @@ export default function MessageList() {
   useEffect(() => {
     async function fetchMessages() {
       setLoading(true);
-      const { data } = await getSupabase()
-        .from("agent_messages")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(200);
+      const { data } = await cachedRead<AgentMessage[]>("messages", () =>
+        getSupabase()
+          .from("agent_messages")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(200)
+      );
       setMessages(data ?? []);
       setLoading(false);
     }
@@ -37,19 +40,21 @@ export default function MessageList() {
       return next;
     });
 
-    if (!message.read) {
+    if (!message.read && !isOffline()) {
       setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, read: true } : m)));
       await getSupabase().from("agent_messages").update({ read: true }).eq("id", id);
     }
   }
 
   async function deleteMessage(id: string) {
+    if (blockedOffline()) return;
     setMessages((prev) => prev.filter((m) => m.id !== id));
     await getSupabase().from("agent_messages").delete().eq("id", id);
   }
 
   async function markAllRead() {
     if (unread.length === 0) return;
+    if (blockedOffline()) return;
     setMessages((prev) => prev.map((m) => ({ ...m, read: true })));
     await getSupabase()
       .from("agent_messages")
@@ -61,6 +66,7 @@ export default function MessageList() {
   }
 
   async function clearAll() {
+    if (blockedOffline()) return;
     if (!confirm("Supprimer tous les messages ?")) return;
     setMessages([]);
     await getSupabase()

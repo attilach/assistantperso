@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Home, CheckSquare, Repeat, Inbox, Settings, UtensilsCrossed, Compass } from "lucide-react";
 import { getSupabase } from "@/lib/supabase";
+import { cachedRead } from "@/lib/offline";
 
 const TABS = [
   { href: "/", label: "Accueil", icon: Home },
@@ -27,11 +28,14 @@ export default function Nav() {
   useEffect(() => {
     if (pathname === "/login") return;
     async function fetchUnread() {
-      const { count } = await getSupabase()
-        .from("agent_messages")
-        .select("id", { count: "exact", head: true })
-        .eq("read", false);
-      setUnreadCount(count ?? 0);
+      const { data } = await cachedRead<number>("unread-count", async () => {
+        const { count, error } = await getSupabase()
+          .from("agent_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("read", false);
+        return { data: count ?? 0, error };
+      });
+      setUnreadCount(data ?? 0);
     }
     fetchUnread();
   }, [pathname]);

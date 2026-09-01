@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { blockedOffline, cachedRead } from "@/lib/offline";
 import {
   CATEGORIES,
   DAYS_LONG,
@@ -66,8 +67,12 @@ export default function RoutineList() {
       const sinceStr = since.toISOString().slice(0, 10);
 
       const [r, c] = await Promise.all([
-        sb.from("routines").select("*").order("created_at", { ascending: false }),
-        sb.from("routine_completions").select("*").gte("completed_date", sinceStr),
+        cachedRead<Routine[]>("routines", () =>
+          sb.from("routines").select("*").order("created_at", { ascending: false })
+        ),
+        cachedRead<RoutineCompletion[]>("routine-completions", () =>
+          sb.from("routine_completions").select("*").gte("completed_date", sinceStr)
+        ),
       ]);
       setRoutines(r.data ?? []);
       setCompletions(c.data ?? []);
@@ -96,6 +101,7 @@ export default function RoutineList() {
   ).length;
 
   async function toggleCompletion(routine: Routine) {
+    if (blockedOffline()) return;
     const dates = completedByRoutine.get(routine.id) ?? new Set();
     const isDone = isCompletedForPeriod(routine, dates);
     const sb = getSupabase();
@@ -142,6 +148,7 @@ export default function RoutineList() {
   }
 
   async function saveRoutine(payload: FormPayload) {
+    if (blockedOffline()) return;
     const sb = getSupabase();
     if (editing) {
       const { data } = await sb
@@ -161,6 +168,7 @@ export default function RoutineList() {
 
   async function deleteEditingRoutine() {
     if (!editing) return;
+    if (blockedOffline()) return;
     const id = editing.id;
     setRoutines((prev) => prev.filter((r) => r.id !== id));
     setCompletions((prev) => prev.filter((c) => c.routine_id !== id));

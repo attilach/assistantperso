@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { blockedOffline, cachedRead } from "@/lib/offline";
 import { setFocus, type Quest, type QuestStatus, STATUS_LABELS } from "@/lib/quests";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,9 @@ export default function QuestsList() {
   useEffect(() => {
     async function fetchQuests() {
       setLoading(true);
-      const { data } = await getSupabase()
-        .from("quests")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await cachedRead<Quest[]>("quests", () =>
+        getSupabase().from("quests").select("*").order("created_at", { ascending: false })
+      );
       setQuests(data ?? []);
       setLoading(false);
     }
@@ -32,6 +32,7 @@ export default function QuestsList() {
     e.preventDefault();
     const title = newTitle.trim();
     if (!title) return;
+    if (blockedOffline()) return;
     setNewTitle("");
 
     const optimistic: Quest = {
@@ -49,6 +50,7 @@ export default function QuestsList() {
   }
 
   async function makeFocus(quest: Quest) {
+    if (blockedOffline()) return;
     // Optimistic: unset all others, set this one
     setQuests((prev) => prev.map((q) => ({ ...q, is_focus: q.id === quest.id ? true : false })));
     await setFocus(quest.id);
@@ -56,12 +58,14 @@ export default function QuestsList() {
   }
 
   async function unfocus(quest: Quest) {
+    if (blockedOffline()) return;
     setQuests((prev) => prev.map((q) => (q.id === quest.id ? { ...q, is_focus: false } : q)));
     await getSupabase().from("quests").update({ is_focus: false }).eq("id", quest.id);
     setEditing(null);
   }
 
   async function setStatus(quest: Quest, status: QuestStatus) {
+    if (blockedOffline()) return;
     const done_at = status === "done" ? new Date().toISOString() : null;
     const patch = status === "done" ? { status, done_at, is_focus: false } : { status, done_at };
     setQuests((prev) => prev.map((q) => (q.id === quest.id ? { ...q, ...patch } : q)));
@@ -70,6 +74,7 @@ export default function QuestsList() {
   }
 
   async function deleteQuest(quest: Quest) {
+    if (blockedOffline()) return;
     if (!confirm(`Supprimer "${quest.title}" ?`)) return;
     setQuests((prev) => prev.filter((q) => q.id !== quest.id));
     await getSupabase().from("quests").delete().eq("id", quest.id);
