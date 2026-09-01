@@ -13,6 +13,7 @@ export type AppSettings = {
 
 export const INTERVAL_OPTIONS = [
   { value: 0, label: "Désactivé" },
+  { value: 5, label: "Toutes les 5 minutes" },
   { value: 15, label: "Toutes les 15 minutes" },
   { value: 30, label: "Toutes les 30 minutes" },
   { value: 60, label: "Toutes les heures" },
