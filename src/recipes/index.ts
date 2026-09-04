@@ -2,7 +2,7 @@ import type { Recipe } from "@/lib/recipes";
 import bowlFourPoulet from "./bowl-four-poulet";
 import bowlFourSteak from "./bowl-four-steak";
 import burgerSauceShakeShake from "./burger-sauce-shake-shake";
-import burritosBoeufHaricots from "./burritos-boeuf-haricots";
+import burritosBoeufHaricotsBatch from "./burritos-boeuf-haricots-batch";
 import chiliConCarneBatch from "./chili-con-carne-batch";
 import hotDogChouOignon from "./hot-dog-chou-oignon";
 import patesThonTomate from "./pates-thon-tomate";
@@ -19,10 +19,10 @@ export const recipes: Recipe[] = [
   patesThonTomate,
   pouletCurryCocoBatch,
   chiliConCarneBatch,
+  burritosBoeufHaricotsBatch,
   penneArrabbiata,
   hotDogChouOignon,
   burgerSauceShakeShake,
-  burritosBoeufHaricots,
 ];
 
 export function getRecipeBySlug(slug: string): Recipe | undefined {
